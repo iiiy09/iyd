@@ -1,0 +1,62 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:file:./data/iyd_learning;MODE=MySQL;AUTO_SERVER=TRUE
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/schema-h2.sql
+  redis:
+    host: localhost
+    port: 6379
+    password:
+    database: 0
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 500MB
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+jwt:
+  secret: iydLearningSystemSecretKey2024StudentAI
+  expiration: 604800000
+
+aliyun:
+  oss:
+    endpoint: oss-cn-hangzhou.aliyuncs.com
+    accessKeyId: demo-key
+    accessKeySecret: demo-secret
+    bucketName: iyd-learning
+
+ai:
+  api:
+    llm:
+      url: https://api.openai.com/v1/chat/completions
+      key: demo-key
+    ocr:
+      url: demo-ocr-url
+      key: demo-key
+    speech:
+      url: demo-speech-url
+      key: demo-key
+    image:
+      url: demo-image-url
+      key: demo-key
