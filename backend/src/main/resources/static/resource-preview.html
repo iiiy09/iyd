@@ -1,0 +1,208 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>资料预览</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Microsoft YaHei','PingFang SC',sans-serif; background:#f0f2f5; padding:40px; color:#333; }
+.container { max-width: 900px; margin:0 auto; }
+.header { background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; padding:30px; border-radius:14px; margin-bottom:20px; }
+.header h1 { font-size:22px; margin-bottom:10px; }
+.tags { display:flex; gap:10px; flex-wrap:wrap; }
+.tag { background:rgba(255,255,255,0.2); padding:4px 14px; border-radius:20px; font-size:13px; }
+.content-body { background:#fff; border-radius:14px; padding:30px; min-height:300px; line-height:2; box-shadow:0 2px 12px rgba(0,0,0,0.06); }
+.content-body h3 { color:#667eea; margin-bottom:14px; font-size:18px; }
+.content-body h4 { color:#303133; margin:16px 0 8px; font-size:16px; }
+.content-body p { color:#606266; font-size:15px; margin-bottom:10px; }
+.content-body .q { background:#f8f9fa; padding:16px; border-radius:10px; margin:10px 0; border-left:4px solid #667eea; }
+.content-body .ans { background:#f0f9eb; padding:16px; border-radius:10px; margin:10px 0; border-left:4px solid #67c23a; }
+.content-body .vocab { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+.content-body .vocab-item { background:#f8f9fa; padding:8px 12px; border-radius:8px; font-size:14px; }
+.content-body .vocab-item .en { font-weight:bold; color:#303133; }
+.content-body .vocab-item .zh { color:#909399; font-size:13px; }
+.loading { text-align:center; padding:40px; color:#909399; }
+.error { text-align:center; padding:40px; color:#f56c6c; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header" id="header">
+    <h1 id="title">加载中...</h1>
+    <div class="tags" id="tags"></div>
+  </div>
+  <div class="content-body" id="contentBody">
+    <div class="loading">正在加载资料内容...</div>
+  </div>
+</div>
+<script>
+const id = new URLSearchParams(location.search).get('id');
+
+const contentDB = {
+  "数学_真题": `<h3>\u771f\u9898\u7ec3\u4e60</h3>
+<div class="q"><p><strong>\u9898\u76ee1\uff1a</strong>\u5df2\u77e5\u4e8c\u6b21\u51fd\u6570 $y=x^2-2x-3$ \u7684\u56fe\u50cf\u4e0e $x$ \u8f74\u4ea4\u4e8e $A$,$B$ \u4e24\u70b9\uff0c\u4e0e $y$ \u8f74\u4ea4\u4e8e $C$ \u70b9\u3002\u6c42\u4e09\u89d2\u5f62 $ABC$ \u7684\u9762\u79ef\u3002</p></div>
+<div class="ans"><p><strong>\u89e3\u7b54\uff1a</strong>\u4ee4 $y=0$ \u5f97 $x^2-2x-3=0$ \u2192 $(x-3)(x+1)=0$ \u2192 $A(-1,0),B(3,0)$\uff0c$|AB|=4$<br>\u4ee4 $x=0$ \u5f97 $y=-3$ \u2192 $C(0,-3)$<br>\u9762\u79ef $S=\\frac12 \\times 4 \\times 3 = 6$</p></div>
+<div class="q"><p><strong>\u9898\u76ee2\uff1a</strong>\u5982\u56fe\uff0c\u5728 $\\triangle ABC$ \u4e2d\uff0c$\\angle C=90\\degree$\uff0c$AC=3$\uff0c$BC=4$\uff0c\u4ee5 $C$ \u4e3a\u5706\u5fc3\u3001$CA$ \u4e3a\u534a\u5f84\u7684\u5706\u4ea4 $AB$ \u4e8e $D$\uff0c\u6c42 $AD$ \u7684\u957f\u3002</p></div>
+<div class="ans"><p><strong>\u89e3\u7b54\uff1a</strong>$AB=\\sqrt{3^2+4^2}=5$\uff0c\u8fc7 $C$ \u4f5c $CE\\perp AB$ \u4e8e $E$\uff0c\u7531\u9762\u79ef\u6cd5 $\\frac12\\times3\\times4=\\frac12\\times5\\times CE$ \u2192 $CE=\\frac{12}{5}$<br>$AE=\\sqrt{3^2-(\\frac{12}{5})^2}=\\frac{9}{5}$\uff0c$AD=2AE=\\frac{18}{5}$</p></div>
+<div class="q"><p><strong>\u9898\u76ee3\uff1a</strong>\u89e3\u65b9\u7a0b\u7ec4 $\\begin{cases} 2x+y=7 \\\\ x-2y=-4 \\end{cases}$</p></div>
+<div class="ans"><p><strong>\u89e3\u7b54\uff1a</strong>\u7531\u2460\u5f97 $y=7-2x$\uff0c\u4ee3\u5165\u2461\u5f97 $x-2(7-2x)=-4$ \u2192 $5x=10$ \u2192 $x=2$\uff0c$y=3$</p></div>`,
+
+  "物理_课件": `<h3>\u7b2c\u4e00\u7ae0 \u8fd0\u52a8\u7684\u63cf\u8ff0</h3>
+<p><strong>\u77e5\u8bc6\u70b91\uff1a\u8d28\u70b9</strong>\u200b \u7814\u7a76\u7269\u4f53\u8fd0\u52a8\u65f6\uff0c\u80fd\u591f\u7528\u4ee3\u8868\u7269\u4f53\u7684\u70b9\u6765\u4ee3\u66ff\u7269\u4f53\uff0c\u8fd9\u4e2a\u70b9\u53eb\u505a\u8d28\u70b9\u3002\u8d28\u70b9\u662f\u4e00\u79cd\u7406\u60f3\u5316\u6a21\u578b\u3002</p>
+<p><strong>\u77e5\u8bc6\u70b92\uff1a\u53c2\u8003\u7cfb</strong>\u200b \u63cf\u8ff0\u7269\u4f53\u8fd0\u52a8\u65f6\uff0c\u7528\u6765\u4f5c\u4e3a\u53c2\u8003\u7684\u5176\u4ed6\u7269\u4f53\u53eb\u505a\u53c2\u8003\u7cfb\u3002</p>
+<p><strong>\u77e5\u8bc6\u70b93\uff1a\u65f6\u95f4\u548c\u65f6\u523b</strong>\u200b \u65f6\u523b\u6307\u7684\u662f\u67d0\u4e00\u4e2a\u77ac\u65f6\uff0c\u65f6\u95f4\u95f4\u9694\u6307\u7684\u662f\u4e24\u4e2a\u65f6\u523b\u4e4b\u95f4\u7684\u95f4\u9694\u3002</p>
+<p><strong>\u77e5\u8bc6\u70b94\uff1a\u4f4d\u79fb\u548c\u8def\u7a0b</strong>\u200b \u4f4d\u79fb\u662f\u5411\u91cf\uff0c\u8868\u793a\u4ece\u8d77\u70b9\u5230\u7ec8\u70b9\u7684\u6709\u5411\u7ebf\u6bb5\uff1b\u8def\u7a0b\u662f\u6807\u91cf\uff0c\u8868\u793a\u8fd0\u52a8\u8f68\u8ff9\u7684\u957f\u5ea6\u3002</p>
+<p><strong>\u77e5\u8bc6\u70b95\uff1a\u901f\u5ea6</strong>\u200b \u77ac\u65f6\u901f\u5ea6\u662f\u7269\u4f53\u5728\u67d0\u4e00\u65f6\u523b\u6216\u67d0\u4e00\u4f4d\u7f6e\u7684\u901f\u5ea6\uff0c\u65b9\u5411\u4e3a\u8be5\u65f6\u523b\u7684\u8fd0\u52a8\u65b9\u5411\u3002</p>
+<p><strong>\u77e5\u8bc6\u70b96\uff1a\u52a0\u901f\u5ea6</strong>\u200b $a=\\frac{\\Delta v}{\\Delta t}$\uff0c\u5355\u4f4d $m/s^2$\u3002\u52a0\u901f\u5ea6\u662f\u63cf\u8ff0\u901f\u5ea6\u53d8\u5316\u5feb\u6162\u7684\u7269\u7406\u91cf\u3002</p>
+<p><strong>\u516c\u5f0f\u603b\u7ed3\uff1a</strong></p>
+<p>$v=v_0+at$ \u200b $x=v_0t+\\frac12at^2$ \u200b $v^2-v_0^2=2ax$ \u200b $\\bar{v}=\\frac{x}{t}=\\frac{v_0+v}{2}$</p>`,
+
+  "英语_复习提纲": `<h3>\u5927\u5b66\u82f1\u8bed\u56db\u7ea7\u6838\u5fc3\u8bcd\u6c47</h3>
+<div class="vocab">
+<div class="vocab-item"><span class="en">abandon</span><br><span class="zh">\u653e\u5f03</span></div>
+<div class="vocab-item"><span class="en">absorb</span><br><span class="zh">\u5438\u6536</span></div>
+<div class="vocab-item"><span class="en">academic</span><br><span class="zh">\u5b66\u672f\u7684</span></div>
+<div class="vocab-item"><span class="en">accelerate</span><br><span class="zh">\u52a0\u901f</span></div>
+<div class="vocab-item"><span class="en">accomplish</span><br><span class="zh">\u5b9e\u73b0</span></div>
+<div class="vocab-item"><span class="en">accurate</span><br><span class="zh">\u7cbe\u786e\u7684</span></div>
+<div class="vocab-item"><span class="en">achieve</span><br><span class="zh">\u8fbe\u6210</span></div>
+<div class="vocab-item"><span class="en">acknowledge</span><br><span class="zh">\u627f\u8ba4</span></div>
+<div class="vocab-item"><span class="en">acquire</span><br><span class="zh">\u83b7\u5f97</span></div>
+<div class="vocab-item"><span class="en">adapt</span><br><span class="zh">\u9002\u5e94</span></div>
+<div class="vocab-item"><span class="en">adequate</span><br><span class="zh">\u8db3\u591f\u7684</span></div>
+<div class="vocab-item"><span class="en">adjust</span><br><span class="zh">\u8c03\u6574</span></div>
+</div>
+<p><strong>\u957f\u96be\u53e5\u7ec3\u4e60\uff1a</strong></p>
+<p>1. <em>Only by working hard can we achieve our goals.</em> \u53ea\u6709\u52aa\u529b\u5de5\u4f5c\uff0c\u6211\u4eec\u624d\u80fd\u5b9e\u73b0\u76ee\u6807\u3002</p>
+<p>2. <em>It is important that we should pay attention to environmental protection.</em> \u6211\u4eec\u5e94\u8be5\u91cd\u89c6\u73af\u5883\u4fdd\u62a4\uff0c\u8fd9\u5f88\u91cd\u8981\u3002</p>
+<p>3. <em>The more you practice, the better you will become.</em> \u7ec3\u4e60\u5f97\u8d8a\u591a\uff0c\u5c31\u4f1a\u53d8\u5f97\u8d8a\u597d\u3002</p>`,
+
+  "语文_复习提纲": `<h3>\u53e4\u8bd7\u8bcd\u7cbe\u9009</h3>
+<h4>\u300a\u9759\u591c\u601d\u300b\u200b \u674e\u767d</h4>
+<p>\u5e8a\u524d\u660e\u6708\u5149\uff0c\u7591\u662f\u5730\u4e0a\u971c\u3002<br>\u4e3e\u5934\u671b\u660e\u6708\uff0c\u4f4e\u5934\u601d\u6545\u4e61\u3002</p>
+<h4>\u300a\u6625\u6653\u300b\u200b \u5b5f\u6d69\u7136</h4>
+<p>\u6625\u7720\u4e0d\u89c9\u6653\uff0c\u5904\u5904\u95fb\u557c\u9e1f\u3002<br>\u591c\u6765\u98ce\u96e8\u58f0\uff0c\u82b1\u843d\u77e5\u591a\u5c11\u3002</p>
+<h4>\u300a\u767d\u96ea\u6b4c\u9001\u6b66\u5224\u5b98\u5f52\u4eac\u300b\u200b \u5c91\u53c2</h4>
+<p>\u5317\u98ce\u5377\u5730\u767d\u8349\u6298\uff0c\u80e1\u5929\u516b\u6708\u5373\u98de\u96ea\u3002<br>\u5ffd\u5982\u4e00\u591c\u6625\u98ce\u6765\uff0c\u5343\u6811\u4e07\u6811\u68a8\u82b1\u5f00\u3002</p>
+<h4>\u300a\u6c34\u8c03\u6b4c\u5934\u300b\u200b \u82cf\u8f7c</h4>
+<p>\u4eba\u6709\u60b2\u6b22\u79bb\u5408\uff0c\u6708\u6709\u9634\u6674\u5706\u7f3a\uff0c\u6b64\u4e8b\u53e4\u96be\u5168\u3002<br>\u4f46\u613f\u4eba\u957f\u4e45\uff0c\u5343\u91cc\u5171\u5a25\u5a25\u3002</p>
+<h4>\u300a\u7231\u8bf4\u300b\u200b \u5468\u6566\u988a</h4>
+<p>\u51fa\u6c5d\u6ce5\u800c\u4e0d\u67d3\uff0c\u6d69\u6e05\u6dbc\u800c\u4e0d\u5996\u3002</p>
+<p><strong>\u8bd7\u8bcd\u8d4f\u6790\uff1a</strong>\u674e\u767d\u7684\u300a\u9759\u591c\u601d\u300b\u4ee5\u7b80\u6d01\u7684\u8bed\u8a00\u63cf\u7ed8\u4e86\u6708\u5149\u4e0b\u7684\u601d\u4e61\u4e4b\u60c5\uff0c\u8fd0\u7528\u4e86\u6bd4\u5632\u3001\u5bf9\u6bd4\u7b49\u4fee\u8f9e\u624b\u6cd5\uff0c\u611f\u60c5\u771f\u631a\u52a8\u4eba\u3002</p>`,
+
+  "英语_课件": `<h3>\u82f1\u8bed\u8bed\u6cd5\u7cbe\u8bb2\uff1a\u65f6\u6001\u6c47\u603b</h3>
+<h4>\u4e00\u3001\u4e00\u822c\u73b0\u5728\u65f6</h4>
+<p>\u7528\u6cd5\uff1a\u8868\u793a\u4e60\u60ef\u6027\u52a8\u4f5c\u3001\u4e8b\u5b9e\u771f\u7406\u3002</p>
+<p>\u7ed3\u6784\uff1a\u4e3b\u8bed + \u52a8\u8bcd\u539f\u5f62\uff08\u7b2c\u4e09\u4eba\u79f0\u5355\u6570\u52a0-s/es\uff09</p>
+<p>\u4f8b\u53e5\uff1a<em>She goes to school every day.</em></p>
+<h4>\u4e8c\u3001\u73b0\u5728\u8fdb\u884c\u65f6</h4>
+<p>\u7528\u6cd5\uff1a\u8868\u793a\u6b63\u5728\u8fdb\u884c\u7684\u52a8\u4f5c\u3002</p>
+<p>\u7ed3\u6784\uff1a\u4e3b\u8bed + am/is/are + doing</p>
+<p>\u4f8b\u53e5\uff1a<em>They are playing football now.</em></p>
+<h4>\u4e09\u3001\u4e00\u822c\u8fc7\u53bb\u65f6</h4>
+<p>\u7528\u6cd5\uff1a\u8868\u793a\u8fc7\u53bb\u67d0\u65f6\u95f4\u53d1\u751f\u7684\u52a8\u4f5c\u6216\u5b58\u5728\u7684\u72b6\u6001\u3002</p>
+<p>\u7ed3\u6784\uff1a\u4e3b\u8bed + \u52a8\u8bcd\u8fc7\u53bb\u5f0f</p>
+<p>\u4f8b\u53e5\uff1a<em>I visited Beijing last summer.</em></p>
+<h4>\u56db\u3001\u4e00\u822c\u5c06\u6765\u65f6</h4>
+<p>\u7528\u6cd5\uff1a\u8868\u793a\u5c06\u6765\u67d0\u65f6\u95f4\u53d1\u751f\u7684\u52a8\u4f5c\u3002</p>
+<p>\u7ed3\u6784\uff1a\u4e3b\u8bed + will/shall + \u52a8\u8bcd\u539f\u5f62</p>
+<p>\u4f8b\u53e5\uff1a<em>We will have a test next week.</em></p>
+<h4>\u4e94\u3001\u73b0\u5728\u5b8c\u6210\u65f6</h4>
+<p>\u7528\u6cd5\uff1a\u8868\u793a\u8fc7\u53bb\u53d1\u751f\u7684\u52a8\u4f5c\u5bf9\u73b0\u5728\u7684\u5f71\u54cd\u3002</p>
+<p>\u7ed3\u6784\uff1a\u4e3b\u8bed + have/has + \u8fc7\u53bb\u5206\u8bcd</p>
+<p>\u4f8b\u53e5\uff1a<em>He has finished his homework.</em></p>`,
+
+  "化学_复习提纲": `<h3>\u521d\u4e2d\u5316\u5b66\u65b9\u7a0b\u5f0f\u6c47\u603b</h3>
+<h4>\u4e00\u3001\u6c27\u6c14\u5236\u5907</h4>
+<p>$2H_2O_2 \\xrightarrow{MnO_2} 2H_2O + O_2\\uparrow$</p>
+<p>$2KMnO_4 \\xrightarrow{\\triangle} K_2MnO_4 + MnO_2 + O_2\\uparrow$</p>
+<p>$2KClO_3 \\xrightarrow[MnO_2]{\\triangle} 2KCl + 3O_2\\uparrow$</p>
+<h4>\u4e8c\u3001\u4e8c\u6c27\u5316\u78b3</h4>
+<p>$C + O_2 \\xrightarrow{\\text{\u70b9\u71c3}} CO_2$</p>
+<p>$CO_2 + H_2O \\rightarrow H_2CO_3$</p>
+<p>$CO_2 + Ca(OH)_2 \\rightarrow CaCO_3\\downarrow + H_2O$</p>
+<h4>\u4e09\u3001\u91d1\u5c5e\u6d3b\u52a8\u6027</h4>
+<p>$Fe + CuSO_4 \\rightarrow FeSO_4 + Cu$</p>
+<p>$Zn + H_2SO_4 \\rightarrow ZnSO_4 + H_2\\uparrow$</p>
+<p>$2Al + 3CuSO_4 \\rightarrow Al_2(SO_4)_3 + 3Cu$</p>
+<h4>\u56db\u3001\u7136\u70e7\u53cd\u5e94</h4>
+<p>$CH_4 + 2O_2 \\xrightarrow{\\text{\u70b9\u71c3}} CO_2 + 2H_2O$</p>
+<p>$C_2H_5OH + 3O_2 \\xrightarrow{\\text{\u70b9\u71c3}} 2CO_2 + 3H_2O$</p>`,
+
+  "语文_课件": `<h3>\u4f5c\u6587\u7d20\u6750\u79ef\u7d2f</h3>
+<h4>\u4eba\u7269\u7d20\u6750</h4>
+<p><strong>\u9646\u904a\uff1a</strong>\u5fc3\u6000\u5929\u4e0b\uff0c\u82e6\u5fc3\u5b64\u8bc6\u4ed9\u4e5d\u66f2\u3002\u5c31\u7b97\u8eab\u5904\u56f0\u5883\uff0c\u4ecd\u7136\u5185\u5fc3\u5766\u8361\uff0c\u6240\u4ee5\u4ed6\u4f1a\u5199\u201c\u5c71\u91cd\u6c34\u590d\u7591\u65e0\u8def\uff0c\u67f3\u6697\u82b1\u660e\u53c8\u4e00\u6751\u201d\u3002</p>
+<p><strong>\u77e5\u8bc6\u6539\u53d8\u547d\u8fd0\uff1a</strong>\u5f20\u6842\u6885\u662f\u78be\u5dde\u5973\u5b50\u9ad8\u8003\u72af\u513f\uff0c\u7528\u77e5\u8bc6\u4e3a\u81ea\u5df1\u596a\u56de\u4eba\u751f\u7684\u9009\u62e9\u6743\u3002</p>
+<h4>\u70ed\u70b9\u8bdd\u9898</h4>
+<p><strong>\u575a\u6301\uff1a</strong>\u4e2d\u56fd\u5973\u6392\u961f\u5728\u5c11\u5e74\u6bd4\u8d5b\u65f6\u906d\u9047\u8fde\u8d25\uff0c\u4f46\u5979\u4eec\u6bcf\u5929\u8bad\u7ec3\u5341\u4e8c\u4e2a\u5c0f\u65f6\uff0c\u6700\u7ec8\u593a\u5f97\u4e16\u754c\u51a0\u519b\u3002</p>
+<p><strong>\u521b\u65b0\uff1a</strong>\u4ee5\u534e\u4e3a\u4e3a\u4ee3\u8868\u7684\u4e2d\u56fd\u79d1\u6280\u4f01\u4e1a\u575a\u6301\u81ea\u4e3b\u521b\u65b0\uff0c\u7a81\u7834\u56fd\u5916\u6280\u672f\u5c01\u9501\u3002</p>
+<h4>\u540d\u8a00\u53e5</h4>
+<p>\u5c71\u91cd\u6c34\u590d\u7591\u65e0\u8def\uff0c\u67f3\u6697\u82b1\u660e\u53c8\u4e00\u6751\u3002\u2014\u2014 \u9646\u6e38</p>
+<p>\u5929\u884c\u5065\uff0c\u541b\u5b50\u4ee5\u81ea\u5f3a\u4e0d\u606f\u3002\u2014\u2014 \u5468\u6613</p>
+<p>\u4eba\u975e\u751f\u800c\u77e5\u4e4b\u8005\uff0c\u8c01\u80fd\u65e0\u60d1\uff1f\u2014\u2014 \u97e9\u6108</p>`,
+
+  "历史_复习提纲": `<h3>\u4e2d\u56fd\u5386\u53f2\u5927\u4e8b\u5e74\u8868</h3>
+<p><strong>\u590f\u5546\u5468</strong>\u200b \u7ea72070\u5e74\u524d\uff0d771\u5e74\u524d</p>
+<p><strong>\u79e6</strong>\u200b 221\u5e74\u524d\uff0d207\u5e74\u524d\uff0c\u79e6\u59cb\u7687\u7edf\u4e00\u516d\u56fd</p>
+<p><strong>\u897f\u6c49</strong>\u200b 202\u5e74\u524d\uff0d9\u5e74\uff0c\u5f20\u9a8f\u51fa\u4f7f\u897f\u57df</p>
+<p><strong>\u4e1c\u6c49</strong>\u200b 25\u5e74\uff0d220\u5e74\uff0c\u83cf\u4ed1\u6539\u8fdb\u9020\u7eb8\u672f</p>
+<p><strong>\u4e09\u56fd</strong>\u200b 220\u5e74\uff0d280\u5e74</p>
+<p><strong>\u897f\u664b</strong>\u200b 265\u5e74\uff0d316\u5e74</p>
+<p><strong>\u968b</strong>\u200b 581\u5e74\uff0d618\u5e74\uff0c\u5f00\u525d\u5927\u8fd0\u6cb3</p>
+<p><strong>\u5510</strong>\u200b 618\u5e74\uff0d907\u5e74\uff0c\u8d5e\u6613\u4e0b\u5f00\u5143\u76db\u4e16</p>
+<p><strong>\u5b8b</strong>\u200b 960\u5e74\uff0d1279\u5e74\uff0c\u6d3b\u5b57\u5370\u5237\u672f\u53d1\u660e</p>
+<p><strong>\u5143</strong>\u200b 1271\u5e74\uff0d1368\u5e74</p>
+<p><strong>\u660e</strong>\u200b 1368\u5e74\uff0d1644\u5e74\uff0c\u90d1\u548c\u4e0b\u897f\u6d0b</p>
+<p><strong>\u6e05</strong>\u200b 1636\u5e74\uff0d1912\u5e74\uff0c\u5eb7\u5e72\u76db\u4e16</p>
+<h4>\u91cd\u8981\u4e8b\u4ef6</h4>
+<p>\u8f9b\u4ea5\u9769\u547d 1911\u5e74&emsp;\u4e94\u56db\u8fd0\u52a8 1919\u5e74&emsp;\u4e2d\u534e\u4eba\u6c11\u5171\u548c\u56fd\u6210\u7acb 1949\u5e74</p>`,
+
+  "数学_答案": `<h3>\u9ad8\u7b49\u6570\u5b66\u8bfe\u540e\u7b54\u6848</h3>
+<h4>\u7b2c\u4e00\u7ae0 \u6781\u9650\u4e0e\u8fde\u7eed</h4>
+<p><strong>\u7ec3\u4e601\uff1a</strong>\u6c42\u6781\u9650 $\\lim_{x\\to 0} \\frac{\\sin x}{x}$</p>
+<div class="ans"><p><strong>\u7b54\uff1a</strong>1</p></div>
+<p><strong>\u7ec3\u4e602\uff1a</strong>\u6c42\u6781\u9650 $\\lim_{x\\to \\infty} (1+\\frac{1}{x})^x$</p>
+<div class="ans"><p><strong>\u7b54\uff1a</strong>$e$</p></div>
+<p><strong>\u7ec3\u4e603\uff1a</strong>\u5224\u65ad\u51fd\u6570 $f(x)=\\begin{cases} x^2\\sin\\frac{1}{x}, & x\\neq 0 \\\\ 0, & x=0 \\end{cases}$ \u5728 $x=0$ \u5904\u7684\u8fde\u7eed\u6027\u3002</p>
+<div class="ans"><p><strong>\u7b54\uff1a</strong>\u8fde\u7eed\u3002\u56e0\u4e3a $\\lim_{x\\to 0} x^2\\sin\\frac{1}{x}=0=f(0)$</p></div>
+<h4>\u7b2c\u4e8c\u7ae0 \u5bfc\u6570\u4e0e\u5fae\u5206</h4>
+<p><strong>\u7ec3\u4e604\uff1a</strong>\u6c42 $y=x^3+2x^2-5x+1$ \u7684\u5bfc\u6570</p>
+<div class="ans"><p><strong>\u7b54\uff1a</strong>$y\\prime=3x^2+4x-5$</p></div>
+<p><strong>\u7ec3\u4e605\uff1a</strong>\u6c42\u51fd\u6570 $y=\\ln(x^2+1)$ \u7684\u5bfc\u6570</p>
+<div class="ans"><p><strong>\u7b54\uff1a</strong>$y\\prime=\\frac{2x}{x^2+1}$</p></div>
+<p><strong>\u7ec3\u4e606\uff1a</strong>\u6c42\u66f2\u7ebf $y=x^3$ \u5728\u70b9 $(1,1)$ \u5904\u7684\u5207\u7ebf\u65b9\u7a0b</p>
+<div class="ans"><p><strong>\u7b54\uff1a</strong>$y\\prime=3x^2$\uff0c\u659c\u7387 $k=3$\uff0c\u5207\u7ebf\u65b9\u7a0b $y-1=3(x-1)$ \u5373 $y=3x-2$</p></div>`
+};
+
+fetch('/api/resource/' + id)
+  .then(r => r.json())
+  .then(res => {
+    if (res.code === 200 && res.data) {
+      const d = res.data;
+      document.title = d.resourceName + ' - iyd\u5b66\u4e60';
+      document.getElementById('title').textContent = d.resourceName;
+      const tags = document.getElementById('tags');
+      if (d.stage) tags.innerHTML += '<span class="tag">' + d.stage + '</span>';
+      if (d.subject) tags.innerHTML += '<span class="tag">' + d.subject + '</span>';
+      if (d.resourceType) tags.innerHTML += '<span class="tag">' + d.resourceType + '</span>';
+      tags.innerHTML += '<span class="tag">\u4e0b\u8f7d ' + d.downloadCount + ' \u6b21</span>';
+
+      const key = (d.subject || '') + '_' + (d.resourceType || '');
+      const content = contentDB[key];
+
+      if (content) {
+        document.getElementById('contentBody').innerHTML = content;
+      } else {
+        document.getElementById('contentBody').innerHTML = '<h3>\u8d44\u6599\u5185\u5bb9</h3><p>\u300a' + d.resourceName + '\u300b\u662f\u4e00\u4efd\u4f18\u8d28\u7684' + (d.subject || '') + (d.resourceType || '') + '\u8d44\u6599\u3002</p><p>\u8bf7\u8054\u7cfb\u7ba1\u7406\u5458\u4e0a\u4f20\u5b8c\u6574\u6587\u4ef6\u3002</p>';
+      }
+    } else {
+      document.getElementById('contentBody').innerHTML = '<div class="error">\u8d44\u6599\u52a0\u8f7d\u5931\u8d25</div>';
+    }
+  })
+  .catch(() => {
+    document.getElementById('contentBody').innerHTML = '<div class="error">\u7f51\u7edc\u8bf7\u6c42\u5931\u8d25</div>';
+  });
+</script>
+</body>
+</html>

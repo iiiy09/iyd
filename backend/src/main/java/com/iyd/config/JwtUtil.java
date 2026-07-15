@@ -1,5 +1,6 @@
 package com.iyd.config;
 
+import com.iyd.common.BusinessException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -48,7 +49,7 @@ public class JwtUtil {
         try {
             return parseToken(token).get("userId", Long.class);
         } catch (Exception e) {
-            return null;
+            throw new BusinessException(401, "登录已过期，请重新登录");
         }
     }
 }

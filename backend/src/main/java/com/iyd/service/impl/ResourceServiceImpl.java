@@ -46,7 +46,7 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public R<?> downloadResource(Long resourceId) {
         StudyResource resource = resourceMapper.selectById(resourceId);
-        if (resource == null) return R.fail("资料不存在");
+        if (resource == null) return R.fail("File not found");
         resource.setDownloadCount(resource.getDownloadCount() + 1);
         resourceMapper.updateById(resource);
         return R.ok(resource.getFileUrl());

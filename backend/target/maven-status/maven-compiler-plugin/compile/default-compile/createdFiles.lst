@@ -44,6 +44,7 @@ com\iyd\service\impl\CourseServiceImpl.class
 com\iyd\dto\LoginDTO.class
 com\iyd\controller\TaskController.class
 com\iyd\service\impl\AdminServiceImpl.class
+com\iyd\config\DataInitializer.class
 com\iyd\entity\StudyTask.class
 com\iyd\entity\CourseInfo.class
 com\iyd\entity\PkBattle.class
