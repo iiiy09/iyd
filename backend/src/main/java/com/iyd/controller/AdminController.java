@@ -25,17 +25,6 @@ public class AdminController {
         return adminService.toggleUserStatus(userId, status);
     }
 
-    @PostMapping("/course/upload")
-    public R<?> uploadCourse(@RequestParam String courseName,
-                              @RequestParam String stage,
-                              @RequestParam String grade,
-                              @RequestParam String subject,
-                              @RequestParam(required = false) String desc,
-                              @RequestParam(required = false) MultipartFile video,
-                              @RequestParam(required = false) MultipartFile cover) {
-        return adminService.uploadCourse(courseName, stage, grade, subject, desc, video, cover);
-    }
-
     @PostMapping("/resource/upload")
     public R<?> uploadResource(@RequestParam String name,
                                 @RequestParam String stage,

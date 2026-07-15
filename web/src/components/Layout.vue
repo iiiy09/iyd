@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <el-container class="layout">
     <el-aside width="220px" class="sidebar">
       <div class="logo">
@@ -11,7 +11,6 @@
           <el-menu-item index="/question">🔍 AI刷题答疑</el-menu-item>
           <el-menu-item index="/errors">📝 智能错题本</el-menu-item>
           <el-menu-item index="/pk">⚔️ 刷题PK对战</el-menu-item>
-          <el-menu-item index="/courses">🎬 精品网课</el-menu-item>
         </el-sub-menu>
         <el-sub-menu index="memorize">
           <template #title><el-icon><Notebook /></el-icon><span>背诵记忆</span></template>
@@ -26,7 +25,6 @@
         </el-sub-menu>
         <el-menu-item index="/score"><el-icon><DataAnalysis /></el-icon><span>成绩分析</span></el-menu-item>
         <el-menu-item index="/resources"><el-icon><FolderOpened /></el-icon><span>学习资料</span></el-menu-item>
-        <el-menu-item index="/tasks"><el-icon><Calendar /></el-icon><span>自律打卡</span></el-menu-item>
       </el-menu>
     </el-aside>
     <el-container>

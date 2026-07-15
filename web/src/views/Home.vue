@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="home">
     <div class="welcome-card">
       <div class="welcome-left">
@@ -7,7 +7,7 @@
       </div>
       <div class="welcome-right">
         <div class="stat-item">
-          <span class="stat-num">{{ stats.todayTasks }}</span>
+          <span class="stat-num">{{ stats.learnHours }}</span>
           <span class="stat-label">今日任务</span>
         </div>
         <div class="stat-item">
@@ -81,10 +81,10 @@
         <el-card class="section-card">
           <template #header><span>⚡ 快捷入口</span></template>
           <div class="quick-grid">
-            <div class="quick-item" @click="$router.push('/courses')"><span class="quick-icon">🎬</span><span>精品网课</span></div>
+
             <div class="quick-item" @click="$router.push('/score')"><span class="quick-icon">📊</span><span>成绩分析</span></div>
             <div class="quick-item" @click="$router.push('/resources')"><span class="quick-icon">📁</span><span>学习资料</span></div>
-            <div class="quick-item" @click="$router.push('/tasks')"><span class="quick-icon">📅</span><span>自律打卡</span></div>
+
             <div class="quick-item" @click="$router.push('/errors')"><span class="quick-icon">📝</span><span>错题本</span></div>
             <div class="quick-item" @click="$router.push('/pk')"><span class="quick-icon">⚔️</span><span>刷题PK</span></div>
           </div>
@@ -99,7 +99,7 @@ import { reactive } from 'vue'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
-const stats = reactive({ todayTasks: 5, streak: 12, totalHours: 86 })
+const stats = reactive({ learnHours: 6, streak: 12, totalHours: 86 })
 
 const reviewList = [
   { id: 1, tag: '单词', tagType: 'primary', content: 'Unit 5 核心词汇复习（12个单词待巩固）' },

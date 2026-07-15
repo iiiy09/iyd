@@ -1,11 +1,11 @@
-﻿<template>
+<template>
   <el-container class="admin-layout">
     <el-aside width="240px" class="admin-sidebar">
       <div class="admin-logo">🛡️ 管理后台</div>
       <el-menu :default-active="activeMenu" router background-color="#0a0a1a" text-color="#8890b5" active-text-color="#fff">
         <el-menu-item index="/admin/dashboard"><el-icon><Odometer /></el-icon>数据概览</el-menu-item>
         <el-menu-item index="/admin/users"><el-icon><User /></el-icon>用户管理</el-menu-item>
-        <el-menu-item index="/admin/courses"><el-icon><VideoCamera /></el-icon>课程管理</el-menu-item>
+        
         <el-menu-item index="/admin/resources"><el-icon><Folder /></el-icon>资料管理</el-menu-item>
         <el-menu-item index="/home"><el-icon><Back /></el-icon>返回前台</el-menu-item>
       </el-menu>

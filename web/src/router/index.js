@@ -1,4 +1,4 @@
-﻿import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
   {
@@ -16,14 +16,12 @@ const routes = [
       { path: 'question', name: 'Question', component: () => import('@/views/QuestionSearch.vue'), meta: { title: 'AI刷题' } },
       { path: 'errors', name: 'Errors', component: () => import('@/views/ErrorBook.vue'), meta: { title: '错题本' } },
       { path: 'pk', name: 'PkBattle', component: () => import('@/views/PkBattle.vue'), meta: { title: '刷题PK' } },
-      { path: 'courses', name: 'Courses', component: () => import('@/views/Courses.vue'), meta: { title: '精品网课' } },
       { path: 'recite', name: 'Recite', component: () => import('@/views/Recite.vue'), meta: { title: 'AI背诵' } },
       { path: 'words', name: 'Words', component: () => import('@/views/WordBook.vue'), meta: { title: '单词背诵' } },
       { path: 'notes', name: 'Notes', component: () => import('@/views/Notes.vue'), meta: { title: '思维导图笔记' } },
       { path: 'ai', name: 'AiGenerate', component: () => import('@/views/AiGenerate.vue'), meta: { title: 'AI创作' } },
       { path: 'score', name: 'Score', component: () => import('@/views/ScoreAnalysis.vue'), meta: { title: '成绩分析' } },
       { path: 'resources', name: 'Resources', component: () => import('@/views/Resources.vue'), meta: { title: '学习资料' } },
-      { path: 'tasks', name: 'Tasks', component: () => import('@/views/Tasks.vue'), meta: { title: '自律打卡' } },
       { path: 'chat', name: 'AiChat', component: () => import('@/views/AiChat.vue'), meta: { title: 'AI助手' } },
       { path: 'profile', name: 'Profile', component: () => import('@/views/Profile.vue'), meta: { title: '个人中心' } },
     ]
@@ -36,7 +34,6 @@ const routes = [
     children: [
       { path: 'dashboard', name: 'AdminDashboard', component: () => import('@/views/admin/Dashboard.vue'), meta: { title: '管理后台' } },
       { path: 'users', name: 'AdminUsers', component: () => import('@/views/admin/UserManage.vue'), meta: { title: '用户管理' } },
-      { path: 'courses', name: 'AdminCourses', component: () => import('@/views/admin/CourseManage.vue'), meta: { title: '课程管理' } },
       { path: 'resources', name: 'AdminResources', component: () => import('@/views/admin/ResourceManage.vue'), meta: { title: '资料管理' } },
     ]
   }

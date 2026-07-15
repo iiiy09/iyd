@@ -20,8 +20,6 @@ public class AdminServiceImpl implements AdminService {
     @Autowired
     private SysUserMapper userMapper;
     @Autowired
-    private CourseInfoMapper courseMapper;
-    @Autowired
     private StudyResourceMapper resourceMapper;
     @Autowired
     private ResourceSyncLogMapper syncLogMapper;
@@ -50,23 +48,6 @@ public class AdminServiceImpl implements AdminService {
         user.setStatus(status);
         userMapper.updateById(user);
         return R.ok();
-    }
-
-    @Override
-    public R<?> uploadCourse(String courseName, String stage, String grade, String subject, String desc, MultipartFile video, MultipartFile cover) {
-        CourseInfo course = new CourseInfo();
-        course.setCourseName(courseName);
-        course.setStage(stage);
-        course.setGrade(grade);
-        course.setSubject(subject);
-        course.setDescription(desc);
-        course.setVideoUrl("/oss/video/" + courseName + ".mp4");
-        course.setCoverUrl("/oss/cover/" + courseName + ".jpg");
-        course.setDuration(3600);
-        course.setCategory("同步课堂");
-        course.setTeacherName("名师讲解");
-        courseMapper.insert(course);
-        return R.ok(course);
     }
 
     @Override
@@ -145,7 +126,6 @@ public class AdminServiceImpl implements AdminService {
     public R<?> getStatistics() {
         Map<String, Object> stats = new HashMap<>();
         stats.put("totalUsers", userMapper.selectCount(null));
-        stats.put("totalCourses", courseMapper.selectCount(null));
         stats.put("totalResources", resourceMapper.selectCount(null));
         stats.put("todayQuestions", errorMapper.selectCount(
                 new LambdaQueryWrapper<QuestionError>().ge(QuestionError::getCreateTime, DateUtil.beginOfDay(new Date()))
