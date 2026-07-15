@@ -49,23 +49,6 @@
           </div>
           <el-progress :percentage="stats.percent" :stroke-width="12" color="#67c23a" />
         </el-card>
-        <el-card class="speech-card">
-          <template #header><span>🎙️ 口语跟读评测</span></template>
-          <div class="speech-area">
-            <el-button type="primary" :icon="Microphone" circle size="large" @click="startSpeech" :loading="speaking" />
-            <span class="speech-hint" v-if="!speechResult">点击麦克风，跟读当前单词发音</span>
-          </div>
-          <div v-if="speechResult" class="speech-result">
-            <div class="speech-score-wrap">
-              <span class="score-label">发音得分</span>
-              <span class="score-value" :class="speechResult.score > 80 ? 'text-success' : 'text-warning'">{{ speechResult.score }}</span>
-            </div>
-            <div class="speech-detail">
-              <el-tag :type="speechResult.score > 80 ? 'success' : 'warning'" size="small">{{ speechResult.pronunciation }}</el-tag>
-              <p class="feedback-text">{{ speechResult.feedback }}</p>
-            </div>
-          </div>
-        </el-card>
       </el-col>
     </el-row>
   </div>
@@ -75,14 +58,12 @@
 import { ref, reactive, onMounted, watch } from 'vue'
 import http from '@/api'
 import { ElMessage } from 'element-plus'
-import { Switch, Microphone, Loading } from '@element-plus/icons-vue'
+import { Switch, Loading } from '@element-plus/icons-vue'
 
 const wordStage = ref('中考')
 const flipped = ref(false)
 const currentWord = ref(null)
 const loading = ref(false)
-const speaking = ref(false)
-const speechResult = ref(null)
 const wordList = ref([])
 let wordIndex = 0
 const stats = reactive({ learned: 0, reviewing: 0, remaining: 0, percent: 0 })
@@ -92,7 +73,6 @@ onMounted(() => loadWords())
 watch(wordStage, () => {
   wordIndex = 0
   currentWord.value = null
-  speechResult.value = null
 })
 
 async function loadWords() {
@@ -132,7 +112,6 @@ async function review(known) {
     await http.post('/recite/word/' + currentWord.value.id + '/review?known=' + known)
     ElMessage.success(known ? '已掌握！' : '已加入复习')
     flipped.value = false
-    // Move to next word
     wordIndex++
     if (wordIndex < wordList.value.length) {
       currentWord.value = wordList.value[wordIndex]
@@ -143,26 +122,6 @@ async function review(known) {
     updateStats(wordList.value)
   } catch (e) {
     ElMessage.error('操作失败')
-  }
-}
-
-async function startSpeech() {
-  if (!currentWord.value) {
-    ElMessage.warning('请先选择要跟读的单词')
-    return
-  }
-  speaking.value = true
-  speechResult.value = null
-  try {
-    // In a real app, this would record audio and upload; here we simulate with the API
-    const res = await http.post('/recite/speech/evaluate', null, {
-      params: { word: currentWord.value.word, audioUrl: 'recorded_audio.mp3' }
-    })
-    speechResult.value = res.data
-  } catch (e) {
-    ElMessage.error('评测失败，请重试')
-  } finally {
-    speaking.value = false
   }
 }
 </script>
@@ -187,15 +146,4 @@ async function startSpeech() {
 .p-num.green { color: #67c23a; }
 .p-num.blue { color: #409eff; }
 .p-num.gray { color: #909399; }
-.speech-card { border-radius: 14px; }
-.speech-area { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 16px 0; }
-.speech-hint { font-size: 13px; color: #909399; }
-.speech-result { margin-top: 12px; padding: 12px; background: #f8f9fa; border-radius: 10px; }
-.speech-score-wrap { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px; }
-.score-label { font-size: 13px; color: #909399; }
-.score-value { font-size: 28px; font-weight: 700; }
-.text-success { color: #67c23a; }
-.text-warning { color: #e6a23c; }
-.speech-detail { text-align: center; }
-.feedback-text { font-size: 13px; color: #606266; margin: 6px 0 0; }
 </style>

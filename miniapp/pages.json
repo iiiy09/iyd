@@ -5,12 +5,10 @@
     { "path": "pages/home/home", "style": { "navigationBarTitleText": "学习首页" } },
     { "path": "pages/question/question", "style": { "navigationBarTitleText": "AI刷题" } },
     { "path": "pages/recite/recite", "style": { "navigationBarTitleText": "AI背诵" } },
-    { "path": "pages/courses/courses", "style": { "navigationBarTitleText": "精品网课" } },
-    { "path": "pages/notes/notes", "style": { "navigationBarTitleText": "思维导图笔记" } },
+        { "path": "pages/notes/notes", "style": { "navigationBarTitleText": "思维导图笔记" } },
     { "path": "pages/ai/ai", "style": { "navigationBarTitleText": "AI创作" } },
     { "path": "pages/words/words", "style": { "navigationBarTitleText": "单词背诵" } },
-    { "path": "pages/tasks/tasks", "style": { "navigationBarTitleText": "自律打卡" } },
-    { "path": "pages/resources/resources", "style": { "navigationBarTitleText": "学习资料" } },
+        { "path": "pages/resources/resources", "style": { "navigationBarTitleText": "学习资料" } },
     { "path": "pages/profile/profile", "style": { "navigationBarTitleText": "个人中心" } }
   ],
   "globalStyle": {
@@ -32,3 +30,4 @@
   },
   "uniIdRouter": {}
 }
+

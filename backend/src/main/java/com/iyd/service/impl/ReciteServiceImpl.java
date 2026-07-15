@@ -148,7 +148,6 @@ public class ReciteServiceImpl implements ReciteService {
     @Override
     public R<?> getWordList(Long userId, String stage, String category) {
         LambdaQueryWrapper<EnglishWord> qw = new LambdaQueryWrapper<>();
-        // Include system words (userId is null) AND user's own words
         qw.and(w -> w.isNull(EnglishWord::getUserId).or().eq(EnglishWord::getUserId, userId));
         if (stage != null && !stage.isEmpty()) {
             qw.eq(EnglishWord::getStage, stage);
@@ -159,13 +158,11 @@ public class ReciteServiceImpl implements ReciteService {
         qw.orderByAsc(EnglishWord::getNextReviewTime);
         List<EnglishWord> words = wordMapper.selectList(qw);
 
-        // If no words found for this stage, check if any words exist at all
         if (words == null || words.isEmpty()) {
             Long totalCount = wordMapper.selectCount(null);
             if (totalCount == null || totalCount == 0) {
                 return R.fail("单词库为空，请联系管理员导入单词数据");
             }
-            // Try without stage filter
             LambdaQueryWrapper<EnglishWord> fallback = new LambdaQueryWrapper<>();
             fallback.and(w -> w.isNull(EnglishWord::getUserId).or().eq(EnglishWord::getUserId, userId));
             fallback.orderByAsc(EnglishWord::getNextReviewTime);
@@ -182,34 +179,11 @@ public class ReciteServiceImpl implements ReciteService {
         if (word == null) return R.fail("单词不存在");
         word.setReviewCount(word.getReviewCount() + 1);
         word.setLastReviewTime(LocalDateTime.now());
-        // Ebbinghaus: next review interval based on review count
         int[] intervals = {1, 2, 4, 7, 15, 30};
         int idx = Math.min(word.getReviewCount(), intervals.length - 1);
         word.setNextReviewTime(LocalDateTime.now().plusDays(intervals[idx]));
         word.setMemoryStatus(known ? 1 : 0);
         wordMapper.updateById(word);
         return R.ok();
-    }
-
-    @Override
-    public R<?> speechEvaluate(Long userId, String word, String audioUrl) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("word", word);
-
-        // Simulate speech evaluation scoring based on word length
-        double baseScore = 75.0 + Math.random() * 20;
-        String pronunciation;
-        if (baseScore >= 85) {
-            pronunciation = "优秀";
-        } else if (baseScore >= 70) {
-            pronunciation = "良好";
-        } else {
-            pronunciation = "需加强";
-        }
-
-        result.put("score", Math.round(baseScore * 10.0) / 10.0);
-        result.put("pronunciation", pronunciation);
-        result.put("feedback", "发音基本标准，注意元音和重音的准确性。建议多听原声跟读。");
-        return R.ok(result);
     }
 }

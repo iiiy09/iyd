@@ -1,20 +1,20 @@
 ﻿<template>
   <view class="home">
     <view class="welcome-banner">
-      <text class="greeting">👋 欢迎回来</text>
-      <text class="name">{{ userInfo?.nickname || '同学' }}</text>
+      <text class="greeting">馃憢 娆㈣繋鍥炴潵</text>
+      <text class="name">{{ userInfo?.nickname || '鍚屽' }}</text>
     </view>
     <view class="stats-row">
       <view class="stat" v-for="s in stats" :key="s.label"><text class="s-num">{{ s.value }}</text><text class="s-label">{{ s.label }}</text></view>
     </view>
-    <view class="section-title">⚡ 功能入口</view>
+    <view class="section-title">鈿?鍔熻兘鍏ュ彛</view>
     <view class="func-grid">
       <view class="func-item" v-for="f in funcs" :key="f.label" @click="navigate(f.url)">
         <text class="f-icon">{{ f.icon }}</text>
         <text class="f-label">{{ f.label }}</text>
       </view>
     </view>
-    <view class="section-title">📋 今日待复习</view>
+    <view class="section-title">馃搵 浠婃棩寰呭涔?/view>
     <view class="review-list">
       <view class="review-item" v-for="r in reviews" :key="r.id">
         <text class="r-tag">{{ r.tag }}</text>
@@ -30,24 +30,22 @@ module.exports = {
     return {
       userInfo: null,
       stats: [
-        { value: '5', label: '今日任务' },
-        { value: '12天', label: '连续打卡' },
-        { value: '86h', label: '累计学习' },
+        { value: '5', label: '浠婃棩浠诲姟' },
+        { value: '12澶?, label: '杩炵画鎵撳崱' },
+        { value: '86h', label: '绱瀛︿範' },
       ],
       funcs: [
-        { icon: '🎤', label: 'AI背诵', url: '/pages/recite/recite' },
-        { icon: '🔍', label: 'AI刷题', url: '/pages/question/question' },
-        { icon: '🔤', label: '单词', url: '/pages/words/words' },
-        { icon: '🧠', label: '笔记', url: '/pages/notes/notes' },
-        { icon: '🎬', label: '网课', url: '/pages/courses/courses' },
-        { icon: '✍️', label: 'AI创作', url: '/pages/ai/ai' },
-        { icon: '📁', label: '资料', url: '/pages/resources/resources' },
-        { icon: '📅', label: '打卡', url: '/pages/tasks/tasks' },
-      ],
+        { icon: '馃帳', label: 'AI鑳岃', url: '/pages/recite/recite' },
+        { icon: '馃攳', label: 'AI鍒烽', url: '/pages/question/question' },
+        { icon: '馃敜', label: '鍗曡瘝', url: '/pages/words/words' },
+        { icon: '馃', label: '绗旇', url: '/pages/notes/notes' },
+                { icon: '鉁嶏笍', label: 'AI鍒涗綔', url: '/pages/ai/ai' },
+        { icon: '馃搧', label: '璧勬枡', url: '/pages/resources/resources' },
+              ],
       reviews: [
-        { id:1, tag:'单词', content:'Unit 5 核心词汇复习' },
-        { id:2, tag:'错题', content:'数学-二次函数错题复盘' },
-        { id:3, tag:'背诵', content:'《岳阳楼记》第三段' },
+        { id:1, tag:'鍗曡瘝', content:'Unit 5 鏍稿績璇嶆眹澶嶄範' },
+        { id:2, tag:'閿欓', content:'鏁板-浜屾鍑芥暟閿欓澶嶇洏' },
+        { id:3, tag:'鑳岃', content:'銆婂渤闃虫ゼ璁般€嬬涓夋' },
       ]
     }
   },
@@ -80,3 +78,5 @@ module.exports = {
 .r-tag { font-size:24rpx; color:#667eea; font-weight:600; }
 .r-content { font-size:28rpx; color:#606266; flex:1; }
 </style>
+
+

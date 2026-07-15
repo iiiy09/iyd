@@ -15,15 +15,6 @@ public class ScoreServiceImpl implements ScoreService {
     private final ScoreReportMapper reportMapper;
 
     @Override
-    public R<?> uploadScoreFile(Long userId, String fileUrl) {
-        ScoreReport report = new ScoreReport();
-        report.setUserId(userId);
-        report.setOriginalFile(fileUrl);
-        reportMapper.insert(report);
-        return R.ok(report);
-    }
-
-    @Override
     public R<?> saveManualScores(Long userId, Map<String, String> scores) {
         ScoreReport report = new ScoreReport();
         report.setUserId(userId);

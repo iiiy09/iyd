@@ -8,5 +8,4 @@ public interface ReciteService {
     R<?> getReciteHistory(Long userId, Integer page, Integer size);
     R<?> getWordList(Long userId, String stage, String category);
     R<?> reviewWord(Long userId, Long wordId, Boolean known);
-    R<?> speechEvaluate(Long userId, String word, String audioUrl);
 }

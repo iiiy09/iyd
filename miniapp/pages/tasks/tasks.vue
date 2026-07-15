@@ -1,64 +1,131 @@
 ﻿<template>
   <view class="tasks">
-    <view class="header"><text class="title">📅 自律打卡</text><button class="add-btn" @click="showAdd=true">+ 新任务</button></view>
+    <view class="header-actions">
+      <button class="add-btn" @click="showAddDialog = true">➕ 新建任务</button>
+    </view>
+
     <view class="task-list">
-      <view class="task-item" v-for="t in tasks" :key="t.id" :class="{done:t.status===1}">
-        <view class="t-check" @click="checkin(t)">{{ t.status===1 ? '✅' : '⬜' }}</view>
-        <view class="t-info">
-          <text class="t-content" :class="{completed:t.status===1}">{{ t.taskContent }}</text>
-          <text class="t-time">{{ t.estimatedMinutes }}分钟</text>
+      <view class="task-item" v-for="task in taskList" :key="task.id" :class="{done:task.status===1}">
+        <view class="task-info">
+          <text class="task-content">{{ task.taskContent }}</text>
+          <text class="task-time" v-if="task.estimatedMinutes">预计{{ task.estimatedMinutes }}分钟</text>
+          <text class="task-checkin-time" v-if="task.checkinTime">✅ {{ task.checkinTime }}</text>
         </view>
-        <button class="t-del" @click="delTask(t.id)">🗑</button>
+        <view class="task-actions">
+          <button class="checkin-btn" v-if="task.status===0" @click="doCheckin(task.id)">打卡</button>
+          <button class="del-btn" @click="doDelete(task.id)">删除</button>
+        </view>
+      </view>
+      <view class="empty" v-if="taskList.length===0">
+        <text>暂无任务，点击上方按钮新建任务</text>
       </view>
     </view>
-    <view class="summary"><text class="s-item">打卡12天</text><text class="s-item">学习86h</text><text class="s-item">完成45个</text></view>
 
-    <view class="modal" v-if="showAdd">
-      <view class="modal-content">
-        <text class="m-title">新建任务</text>
-        <input v-model="form.taskContent" placeholder="任务内容" class="m-input" />
-        <input v-model="form.estimatedMinutes" type="number" placeholder="预计时长(分钟)" class="m-input" />
-        <view class="m-btns"><button @click="showAdd=false">取消</button><button class="primary" @click="addTask">创建</button></view>
+    <!-- 新建任务弹窗 -->
+    <view class="mask" v-if="showAddDialog" @click="showAddDialog=false"></view>
+    <view class="dialog" v-if="showAddDialog">
+      <view class="dialog-title">新建任务</view>
+      <input class="dialog-input" v-model="newTaskContent" placeholder="输入任务内容..." />
+      <input class="dialog-input" v-model="newTaskMinutes" placeholder="预计用时（分钟）" type="number" />
+      <view class="dialog-actions">
+        <button class="cancel-btn" @click="showAddDialog=false">取消</button>
+        <button class="confirm-btn" @click="addTask">确认添加</button>
       </view>
     </view>
   </view>
 </template>
 
 <script>
-const api = require('@/utils/api')
+const api = require("../../utils/api")
 module.exports = {
-  data() { return { tasks:[], showAdd:false, form:{taskContent:'',estimatedMinutes:30} } },
-  onShow() { this.loadTasks() },
+  data() {
+    return {
+      taskList: [],
+      showAddDialog: false,
+      newTaskContent: "",
+      newTaskMinutes: "30"
+    }
+  },
+  onShow() {
+    this.loadTasks()
+  },
   methods: {
-    async loadTasks() { const res=await api.get('/task/list'); this.tasks=res.data||[] },
-    async addTask() { await api.post('/task',this.form); this.showAdd=false; this.form={taskContent:'',estimatedMinutes:30}; this.loadTasks(); uni.showToast({title:'创建成功'}) },
-    async checkin(t) { if(t.status===1) return; await api.post('/task/'+t.id+'/checkin'); uni.showToast({title:'打卡成功！'}); this.loadTasks() },
-    async delTask(id) { await api.delete('/task/'+id); this.loadTasks() }
+    async loadTasks() {
+      try {
+        const res = await api.get("/task/list")
+        this.taskList = res.data || []
+      } catch(e) {
+        uni.showToast({ title: "加载失败", icon: "none" })
+      }
+    },
+    async addTask() {
+      if (!this.newTaskContent.trim()) {
+        return uni.showToast({ title: "请输入任务内容", icon: "none" })
+      }
+      try {
+        await api.post("/task", {
+          taskContent: this.newTaskContent,
+          estimatedMinutes: parseInt(this.newTaskMinutes) || 30
+        })
+        uni.showToast({ title: "创建成功" })
+        this.showAddDialog = false
+        this.newTaskContent = ""
+        this.newTaskMinutes = "30"
+        this.loadTasks()
+      } catch(e) {
+        uni.showToast({ title: "创建失败", icon: "none" })
+      }
+    },
+    async doCheckin(taskId) {
+      try {
+        await api.post("/task/" + taskId + "/checkin")
+        uni.showToast({ title: "打卡成功" })
+        this.loadTasks()
+      } catch(e) {
+        uni.showToast({ title: "打卡失败", icon: "none" })
+      }
+    },
+    async doDelete(taskId) {
+      uni.showModal({
+        title: "确认删除",
+        content: "确定要删除这个任务吗？",
+        success: async (res) => {
+          if (res.confirm) {
+            try {
+              await api.delete("/task/" + taskId)
+              uni.showToast({ title: "已删除" })
+              this.loadTasks()
+            } catch(e) {
+              uni.showToast({ title: "删除失败", icon: "none" })
+            }
+          }
+        }
+      })
+    }
   }
 }
 </script>
 
 <style>
-.tasks { padding:20rpx; }
-.header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20rpx; }
-.title { font-size:36rpx; font-weight:600; }
-.add-btn { background:#667eea; color:#fff; font-size:26rpx; padding:10rpx 24rpx; border-radius:8rpx; }
-.task-list { background:#fff; border-radius:16rpx; padding:10rpx; }
-.task-item { display:flex; align-items:center; gap:16rpx; padding:20rpx; border-bottom:1rpx solid #f5f5f5; }
-.task-item.done { opacity:0.5; }
-.t-check { font-size:36rpx; }
-.t-info { flex:1; }
-.t-content { font-size:28rpx; color:#303133; display:block; }
-.t-content.completed { text-decoration:line-through; color:#c0c4cc; }
-.t-time { font-size:24rpx; color:#909399; }
-.t-del { font-size:32rpx; background:none; }
-.summary { background:#fff; border-radius:16rpx; padding:24rpx; margin-top:20rpx; display:flex; justify-content:space-around; }
-.s-item { font-size:28rpx; color:#667eea; font-weight:600; }
-.modal { position:fixed; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:100; padding:40rpx; }
-.modal-content { background:#fff; border-radius:20rpx; padding:40rpx; width:100%; }
-.m-title { font-size:34rpx; font-weight:600; margin-bottom:24rpx; display:block; }
-.m-input { height:70rpx; border:2rpx solid #e4e7ed; border-radius:10rpx; padding:0 16rpx; margin-bottom:16rpx; }
-.m-btns { display:flex; gap:16rpx; }
-.m-btns button { flex:1; }
-.primary { background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; }
+.tasks { padding: 20rpx; }
+.header-actions { margin-bottom: 20rpx; }
+.add-btn { width: 100%; height: 88rpx; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border-radius: 12rpx; font-size: 32rpx; line-height: 88rpx; text-align: center; }
+.task-list { background: #fff; border-radius: 16rpx; overflow: hidden; }
+.task-item { display: flex; align-items: center; justify-content: space-between; padding: 24rpx; border-bottom: 1rpx solid #f5f5f5; }
+.task-item.done { opacity: 0.6; }
+.task-info { flex: 1; display: flex; flex-direction: column; gap: 6rpx; }
+.task-content { font-size: 30rpx; color: #303133; font-weight: 500; }
+.task-time { font-size: 24rpx; color: #909399; }
+.task-checkin-time { font-size: 24rpx; color: #67c23a; }
+.task-actions { display: flex; gap: 12rpx; }
+.checkin-btn { background: #67c23a; color: #fff; border-radius: 8rpx; font-size: 26rpx; padding: 8rpx 20rpx; }
+.del-btn { background: #f56c6c; color: #fff; border-radius: 8rpx; font-size: 26rpx; padding: 8rpx 20rpx; }
+.empty { text-align: center; padding: 60rpx; font-size: 28rpx; color: #909399; }
+.mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+.dialog { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; border-radius: 16rpx; padding: 40rpx; width: 560rpx; z-index: 100; }
+.dialog-title { font-size: 34rpx; font-weight: 600; color: #303133; margin-bottom: 24rpx; text-align: center; }
+.dialog-input { width: 100%; height: 72rpx; border: 2rpx solid #e4e7ed; border-radius: 10rpx; font-size: 28rpx; padding: 0 16rpx; margin-bottom: 16rpx; }
+.dialog-actions { display: flex; gap: 20rpx; margin-top: 20rpx; }
+.cancel-btn { flex: 1; height: 72rpx; background: #f0f2f5; color: #606266; border-radius: 10rpx; font-size: 28rpx; }
+.confirm-btn { flex: 1; height: 72rpx; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border-radius: 10rpx; font-size: 28rpx; }
 </style>

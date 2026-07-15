@@ -14,13 +14,6 @@ public class ScoreController {
     private final ScoreService scoreService;
     private final JwtUtil jwtUtil;
 
-    @PostMapping("/upload")
-    public R<?> uploadScoreFile(@RequestHeader("Authorization") String token,
-                                 @RequestParam String fileUrl) {
-        Long userId = jwtUtil.getUserId(token.replace("Bearer ", ""));
-        return scoreService.uploadScoreFile(userId, fileUrl);
-    }
-
     @PostMapping("/manual")
     public R<?> saveManualScores(@RequestHeader("Authorization") String token,
                                   @RequestBody Map<String, String> scores) {

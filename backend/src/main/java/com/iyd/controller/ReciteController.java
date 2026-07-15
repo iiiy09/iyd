@@ -44,12 +44,4 @@ public class ReciteController {
         Long userId = jwtUtil.getUserId(token.replace("Bearer ", ""));
         return reciteService.reviewWord(userId, wordId, known);
     }
-
-    @PostMapping("/speech/evaluate")
-    public R<?> speechEvaluate(@RequestHeader("Authorization") String token,
-                                @RequestParam String word,
-                                @RequestParam String audioUrl) {
-        Long userId = jwtUtil.getUserId(token.replace("Bearer ", ""));
-        return reciteService.speechEvaluate(userId, word, audioUrl);
-    }
 }

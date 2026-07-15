@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="score-page">
     <div class="page-header">
       <h2>📊 成绩智能分析</h2>
@@ -8,55 +8,26 @@
     <el-row :gutter="20">
       <el-col :span="10">
         <el-card class="input-card">
-          <template #header>
-            <div class="card-header">
-              <span>📝 录入成绩</span>
-              <el-radio-group v-model="inputMode" size="small">
-                <el-radio-button value="manual">手动输入</el-radio-button>
-                <el-radio-button value="upload">上传文件</el-radio-button>
-              </el-radio-group>
-            </div>
-          </template>
+          <template #header><span>📝 录入成绩</span></template>
 
-          <!-- Manual Input Mode -->
-          <div v-if="inputMode === 'manual'">
-            <div class="form-grid">
-              <div v-for="sub in subjects" :key="sub.key" class="form-item">
-                <label>{{ sub.label }}</label>
-                <el-input v-model="form[sub.key]" placeholder="0-100" maxlength="3" clearable />
-              </div>
-            </div>
-            <div class="form-actions">
-              <el-button type="primary" size="large" :loading="submitting" @click="submitAndAnalyze" style="width:100%">
-                提交并智能分析
-              </el-button>
+          <div class="form-grid">
+            <div v-for="sub in subjects" :key="sub.key" class="form-item">
+              <label>{{ sub.label }}</label>
+              <el-input v-model="form[sub.key]" placeholder="0-100" maxlength="3" clearable />
             </div>
           </div>
-
-          <!-- Upload Mode -->
-          <div v-else>
-            <el-upload drag :auto-upload="false" accept=".xlsx,.xls" class="score-upload">
-              <el-icon :size="48"><UploadFilled /></el-icon>
-              <div>点击或拖拽Excel成绩文件</div>
-              <div class="upload-hint">支持.xlsx/.xls格式</div>
-            </el-upload>
-            <el-button type="primary" size="large" @click="uploadScore" style="width:100%;margin-top:16px">
-              上传并分析
+          <div class="form-actions">
+            <el-button type="primary" size="large" :loading="submitting" @click="submitAndAnalyze" style="width:100%">
+              提交并智能分析
             </el-button>
           </div>
         </el-card>
 
-        <!-- Report History -->
         <el-card class="history-card" style="margin-top:16px">
           <template #header><span>📋 历史分析报告</span></template>
           <div v-if="reportList.length === 0" class="empty-hint">暂无历史报告</div>
           <div v-for="r in reportList" :key="r.id" class="history-item" :class="{ active: currentReport?.id === r.id }" @click="loadReport(r.id)">
-            <div class="history-info">
-              <span class="history-date">{{ formatDate(r.createTime) }}</span>
-              <el-tag size="small" :type="r.originalFile === 'manual_input' ? '' : 'success'" effect="plain">
-                {{ r.originalFile === 'manual_input' ? '手动' : '上传' }}
-              </el-tag>
-            </div>
+            <span class="history-date">{{ formatDate(r.createTime) }}</span>
             <el-icon><ArrowRight /></el-icon>
           </div>
         </el-card>
@@ -68,7 +39,6 @@
             <span class="report-title">📋 分析报告 #{{ currentReport.id }}</span>
           </template>
 
-          <!-- Score Grid -->
           <div class="score-grid">
             <div v-for="(val, key) in scoreMap" :key="key" class="score-item" :class="getScoreLevel(val)">
               <span class="subject-name">{{ key }}</span>
@@ -78,7 +48,6 @@
 
           <el-divider />
 
-          <!-- ECharts -->
           <div class="charts-row">
             <div class="chart-box">
               <div ref="radarChartRef" style="height:280px"></div>
@@ -90,7 +59,6 @@
 
           <el-divider />
 
-          <!-- AI Analysis Report -->
           <el-tabs v-model="activeTab">
             <el-tab-pane label="学情分析报告" name="report">
               <div class="ai-report" v-html="formattedReport"></div>
@@ -111,10 +79,9 @@
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import http from '@/api'
 import { ElMessage } from 'element-plus'
-import { UploadFilled, ArrowRight } from '@element-plus/icons-vue'
+import { ArrowRight } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 
-const inputMode = ref('manual')
 const submitting = ref(false)
 const activeTab = ref('report')
 const currentReport = ref(null)
@@ -199,7 +166,6 @@ function renderCharts(report) {
     const { labels, values } = getChartData(report)
     if (labels.length === 0) return
 
-    // Radar Chart
     if (radarChartRef.value) {
       radarChart = echarts.init(radarChartRef.value)
       radarChart.setOption({
@@ -219,7 +185,6 @@ function renderCharts(report) {
       radarChart.resize()
     }
 
-    // Bar Chart
     if (barChartRef.value) {
       barChart = echarts.init(barChartRef.value)
       const colors = values.map(v => {
@@ -251,7 +216,6 @@ watch(currentReport, (val) => {
 })
 
 async function submitAndAnalyze() {
-  // Validate
   const scores = {}
   let hasScore = false
   for (const sub of subjects) {
@@ -286,10 +250,6 @@ async function submitAndAnalyze() {
   }
 }
 
-async function uploadScore() {
-  ElMessage.info('文件上传功能开发中，请使用手动输入模式')
-}
-
 async function loadReports() {
   try {
     const res = await http.get('/score/reports')
@@ -315,14 +275,11 @@ onMounted(() => {
 .score-page { max-width: 1200px; margin: 0 auto; }
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 .page-header h2 { font-size: 20px; margin: 0; }
-.card-header { display: flex; justify-content: space-between; align-items: center; }
 
 .input-card { border-radius: 14px; }
 .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
 .form-item label { display: block; font-size: 13px; color: #606266; margin-bottom: 4px; font-weight: 500; }
 .form-actions { margin-top: 4px; }
-.score-upload { width: 100%; }
-.upload-hint { font-size: 12px; color: #c0c4cc; margin-top: 6px; }
 
 .history-card { border-radius: 14px; }
 .empty-hint { text-align: center; color: #c0c4cc; padding: 20px; font-size: 14px; }
@@ -333,7 +290,6 @@ onMounted(() => {
 }
 .history-item:hover { background: #f5f7fa; }
 .history-item.active { background: #ecf0ff; }
-.history-info { display: flex; align-items: center; gap: 8px; }
 .history-date { font-size: 13px; color: #606266; }
 
 .report-card { border-radius: 14px; }
