@@ -5,6 +5,7 @@ import com.iyd.config.JwtUtil;
 import com.iyd.service.ScoreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/score")
@@ -18,6 +19,13 @@ public class ScoreController {
                                  @RequestParam String fileUrl) {
         Long userId = jwtUtil.getUserId(token.replace("Bearer ", ""));
         return scoreService.uploadScoreFile(userId, fileUrl);
+    }
+
+    @PostMapping("/manual")
+    public R<?> saveManualScores(@RequestHeader("Authorization") String token,
+                                  @RequestBody Map<String, String> scores) {
+        Long userId = jwtUtil.getUserId(token.replace("Bearer ", ""));
+        return scoreService.saveManualScores(userId, scores);
     }
 
     @PostMapping("/{reportId}/analyze")
