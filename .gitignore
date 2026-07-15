@@ -22,3 +22,10 @@ data/
 *.log  
   
 server.log 
+backend/target/
+*.jar
+*.class
+maven-status/
+.idea/
+*.iml
+*.log
