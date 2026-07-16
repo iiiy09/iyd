@@ -2,11 +2,6 @@
   <div class="recite-page">
     <div class="page-header">
       <h2>🎤 AI智能背诵检测</h2>
-      <el-radio-group v-model="checkType" size="default">
-        <el-radio-button label="1">✏️ 文字批改</el-radio-button>
-        <el-radio-button label="2">📷 拍照批改</el-radio-button>
-        <el-radio-button label="3">🎥 视频批改</el-radio-button>
-      </el-radio-group>
     </div>
     <el-row :gutter="20">
       <el-col :span="14">
@@ -14,26 +9,10 @@
           <template #header><span>📖 背诵原文</span></template>
           <el-input v-model="originalText" type="textarea" :rows="8" placeholder="请输入或粘贴需要背诵的课文/知识点原文..." />
         </el-card>
-        <el-card class="recite-card" v-if="checkType == 1">
+        <el-card class="recite-card">
           <template #header><span>✍️ 默写作答</span></template>
           <el-input v-model="userAnswer" type="textarea" :rows="8" placeholder="请在此默写背诵内容..." />
           <el-button type="primary" size="large" @click="submitRecite" :loading="submitting" class="submit-btn">提交批改</el-button>
-        </el-card>
-        <el-card class="recite-card" v-else-if="checkType == 2">
-          <template #header><span>📷 拍照上传</span></template>
-          <el-upload drag :auto-upload="false" class="upload-area">
-            <el-icon :size="40"><Camera /></el-icon>
-            <div>拍摄手写背诵内容</div>
-          </el-upload>
-          <el-button type="primary" size="large" @click="submitRecite" :loading="submitting" class="submit-btn">OCR识别批改</el-button>
-        </el-card>
-        <el-card class="recite-card" v-else>
-          <template #header><span>🎥 上传背诵视频</span></template>
-          <el-upload drag :auto-upload="false" class="upload-area">
-            <el-icon :size="40"><VideoCamera /></el-icon>
-            <div>上传现场背诵视频</div>
-          </el-upload>
-          <el-button type="primary" size="large" @click="submitRecite" :loading="submitting" class="submit-btn">AI视频解析批改</el-button>
         </el-card>
       </el-col>
       <el-col :span="10">
@@ -63,7 +42,6 @@ import { ref } from 'vue'
 import http from '@/api'
 import { ElMessage } from 'element-plus'
 
-const checkType = ref('1')
 const originalText = ref('')
 const userAnswer = ref('')
 const submitting = ref(false)
@@ -73,7 +51,7 @@ async function submitRecite() {
   if (!originalText.value.trim()) return ElMessage.warning('请输入背诵原文')
   submitting.value = true
   try {
-    const res = await http.post('/recite/submit', { originalText: originalText.value, userAnswer: userAnswer.value, checkType: Number(checkType.value) })
+    const res = await http.post('/recite/submit', { originalText: originalText.value, userAnswer: userAnswer.value, checkType: 1 })
     result.value = res.data
   } finally { submitting.value = false }
 }
@@ -91,7 +69,6 @@ function getScoreClass(score) {
 .page-header h2 { font-size: 20px; color: #303133; }
 .recite-card { border-radius: 14px; margin-bottom: 16px; }
 .submit-btn { margin-top: 16px; width: 100%; }
-.upload-area { width: 100%; }
 .result-card { border-radius: 14px; text-align: center; }
 .score-circle {
   width: 100px; height: 100px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 12px;

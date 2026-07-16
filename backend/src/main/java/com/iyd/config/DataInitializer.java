@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -25,12 +26,9 @@ public class DataInitializer implements CommandLineRunner {
 
     private void seedResources() {
         Long count = resourceMapper.selectCount(null);
-        if (count != null && count > 0) {
-            log.info("DB has resources, skip seeding");
-            return;
-        }
+        if (count != null && count > 0) { log.info("DB has resources, skip seeding"); return; }
         log.info("Seeding sample resources...");
-        addResource("2024中考数学真题汇编", "初中", "九年级", "数学", "真题", 2580);
+        addResource("2024中考数学真题汇总", "初中", "九年级", "数学", "真题", 2580);
         addResource("高中物理必修一课件", "高中", "高一", "物理", "课件", 1890);
         addResource("大学英语四级词汇表", "大学", "大一", "英语", "复习提纲", 3200);
         addResource("小学语文古诗词大全", "小学", "六年级", "语文", "复习提纲", 4500);
@@ -45,15 +43,9 @@ public class DataInitializer implements CommandLineRunner {
 
     private void addResource(String name, String stage, String grade, String subj, String type, int downloads) {
         StudyResource r = new StudyResource();
-        r.setResourceName(name);
-        r.setStage(stage);
-        r.setGrade(grade);
-        r.setSubject(subj);
-        r.setResourceType(type);
-        r.setFileUrl("/oss/init/" + name + ".pdf");
-        r.setSource("init");
-        r.setAuditStatus(1);
-        r.setDownloadCount(downloads);
+        r.setResourceName(name); r.setStage(stage); r.setGrade(grade); r.setSubject(subj);
+        r.setResourceType(type); r.setFileUrl("/oss/init/" + name + ".pdf");
+        r.setSource("init"); r.setAuditStatus(1); r.setDownloadCount(downloads);
         resourceMapper.insert(r);
         r.setFileUrl("/resource-preview.html?id=" + r.getId());
         resourceMapper.updateById(r);
@@ -61,78 +53,276 @@ public class DataInitializer implements CommandLineRunner {
 
     private void seedWords() {
         Long wordCount = wordMapper.selectCount(null);
-        if (wordCount != null && wordCount > 0) {
-            log.info("DB has words, skip seeding");
-            return;
+        if (wordCount != null && wordCount > 0) { log.info("DB has words, skip seeding"); return; }
+        log.info("Seeding large English vocabulary...");
+
+        // Batch insert words using lists to avoid encoding issues
+        List<String[]> allWords = new ArrayList<>();
+        
+        // ===== ZHONGKAO (80 words) =====
+        String[][] zk = {
+            {"ability","ability","n. ability","She has the ability.","中考"},
+            {"abroad","abroad","adv. abroad","Study abroad.","中考"},
+            {"absent","absent","adj. absent","Absent from school.","中考"},
+            {"accept","accept","v. accept","Accept the offer.","中考"},
+            {"achieve","achieve","v. achieve","Achieve your dream.","中考"},
+            {"active","active","adj. active","Active in class.","中考"},
+            {"activity","activity","n. activity","Outdoor activity.","中考"},
+            {"address","address","n. address","Email address.","中考"},
+            {"advantage","advantage","n. advantage","Have advantage.","中考"},
+            {"advice","advice","n. advice","Good advice.","中考"},
+            {"afford","afford","v. afford","Afford a car.","中考"},
+            {"agree","agree","v. agree","Agree with you.","中考"},
+            {"allow","allow","v. allow","Allow entry.","中考"},
+            {"although","although","conj. although","Although it rained.","中考"},
+            {"amount","amount","n. amount","Large amount.","中考"},
+            {"announce","announce","v. announce","Announce results.","中考"},
+            {"anxious","anxious","adj. anxious","Anxious about exam.","中考"},
+            {"apologize","apologize","v. apologize","Apologize to her.","中考"},
+            {"appear","appear","v. appear","Appear suddenly.","中考"},
+            {"apply","apply","v. apply","Apply for job.","中考"},
+            {"appreciate","appreciate","v. appreciate","Appreciate help.","中考"},
+            {"approach","approach","v. approach","Approach winter.","中考"},
+            {"arrange","arrange","v. arrange","Arrange meeting.","中考"},
+            {"article","article","n. article","Read article.","中考"},
+            {"assume","assume","v. assume","Assume right.","中考"},
+            {"attract","attract","v. attract","Attract people.","中考"},
+            {"average","average","n. average","Above average.","中考"},
+            {"avoid","avoid","v. avoid","Avoid mistake.","中考"},
+            {"balance","balance","n. balance","Keep balance.","中考"},
+            {"behave","behave","v. behave","Behave well.","中考"},
+            {"believe","believe","v. believe","Believe in you.","中考"},
+            {"belong","belong","v. belong","Belong to me.","中考"},
+            {"benefit","benefit","n. benefit","Health benefit.","中考"},
+            {"breathe","breathe","v. breathe","Breathe deeply.","中考"},
+            {"brief","brief","adj. brief","Brief intro.","中考"},
+            {"calculate","calculate","v. calculate","Calculate cost.","中考"},
+            {"capture","capture","v. capture","Capture moment.","中考"},
+            {"celebrate","celebrate","v. celebrate","Celebrate New Year.","中考"},
+            {"challenge","challenge","n. challenge","Face challenge.","中考"},
+            {"character","character","n. character","Good character.","中考"},
+            {"comfortable","comfortable","adj. comfortable","Comfortable chair.","中考"},
+            {"communicate","communicate","v. communicate","Communicate well.","中考"},
+            {"compare","compare","v. compare","Compare answers.","中考"},
+            {"compete","compete","v. compete","Compete for prize.","中考"},
+            {"complain","complain","v. complain","Complain about noise.","中考"},
+            {"complete","complete","v. complete","Complete task.","中考"},
+            {"concentrate","concentrate","v. concentrate","Concentrate on study.","中考"},
+            {"confident","confident","adj. confident","Be confident.","中考"},
+            {"connect","connect","v. connect","Connect dots.","中考"},
+            {"consider","consider","v. consider","Consider problem.","中考"},
+            {"continue","continue","v. continue","Continue work.","中考"},
+            {"contribute","contribute","v. contribute","Contribute ideas.","中考"},
+            {"control","control","v. control","Control emotion.","中考"},
+            {"convenient","convenient","adj. convenient","Very convenient.","中考"},
+            {"convince","convince","v. convince","Convince him.","中考"},
+            {"courage","courage","n. courage","Take courage.","中考"},
+            {"create","create","v. create","Create art.","中考"},
+            {"curious","curious","adj. curious","Curious child.","中考"},
+            {"damage","damage","n. damage","Storm damage.","中考"},
+            {"decide","decide","v. decide","Decide quickly.","中考"},
+            {"decrease","decrease","v. decrease","Decrease speed.","中考"},
+            {"defeat","defeat","v. defeat","Defeat opponent.","中考"},
+            {"defend","defend","v. defend","Defend country.","中考"},
+            {"deliver","deliver","v. deliver","Deliver letter.","中考"},
+            {"demand","demand","v. demand","Demand attention.","中考"},
+            {"depend","depend","v. depend","Depend on weather.","中考"},
+            {"describe","describe","v. describe","Describe picture.","中考"},
+            {"deserve","deserve","v. deserve","Deserve rest.","中考"},
+            {"destroy","destroy","v. destroy","Destroy building.","中考"},
+            {"determine","determine","v. determine","Determine cause.","中考"},
+            {"develop","develop","v. develop","Develop city.","中考"},
+            {"discover","discover","v. discover","Discover new things.","中考"},
+            {"discuss","discuss","v. discuss","Discuss plan.","中考"},
+            {"distribute","distribute","v. distribute","Distribute papers.","中考"},
+            {"educate","educate","v. educate","Educate children.","中考"},
+            {"efficient","efficient","adj. efficient","Efficient method.","中考"},
+            {"encourage","encourage","v. encourage","Encourage students.","中考"},
+            {"engage","engage","v. engage","Engage in class.","中考"},
+            {"enormous","enormous","adj. enormous","Enormous task.","中考"},
+            {"enthusiasm","enthusiasm","n. enthusiasm","Show enthusiasm.","中考"},
+            {"essential","essential","adj. essential","Essential skill.","中考"},
+            {"establish","establish","v. establish","Establish school.","中考"},
+            {"evaluate","evaluate","v. evaluate","Evaluate result.","中考"},
+        };
+        for (String[] w : zk) allWords.add(new String[]{w[0],w[1],w[2],w[3],w[4],"核心词汇"});
+
+        // ===== GAOKAO (80 words) =====
+        String[][] gk = {
+            {"abandon","abandon","v. abandon","Abandon plan.","高考"},
+            {"absorb","absorb","v. absorb","Absorb knowledge.","高考"},
+            {"abstract","abstract","adj. abstract","Abstract concept.","高考"},
+            {"abundant","abundant","adj. abundant","Abundant resource.","高考"},
+            {"accelerate","accelerate","v. accelerate","Accelerate growth.","高考"},
+            {"access","access","n. access","Access library.","高考"},
+            {"accompany","accompany","v. accompany","Accompany friend.","高考"},
+            {"accomplish","accomplish","v. accomplish","Accomplish goal.","高考"},
+            {"accurate","accurate","adj. accurate","Accurate data.","高考"},
+            {"accuse","accuse","v. accuse","Accuse of crime.","高考"},
+            {"acknowledge","acknowledge","v. acknowledge","Acknowledge truth.","高考"},
+            {"acquire","acquire","v. acquire","Acquire skill.","高考"},
+            {"adapt","adapt","v. adapt","Adapt to change.","高考"},
+            {"adequate","adequate","adj. adequate","Adequate supply.","高考"},
+            {"adjust","adjust","v. adjust","Adjust method.","高考"},
+            {"admire","admire","v. admire","Admire courage.","高考"},
+            {"adopt","adopt","v. adopt","Adopt policy.","高考"},
+            {"advance","advance","v. advance","Advance career.","高考"},
+            {"advocate","advocate","v. advocate","Advocate peace.","高考"},
+            {"affect","affect","v. affect","Affect result.","高考"},
+            {"allocate","allocate","v. allocate","Allocate funds.","高考"},
+            {"alternative","alternative","n. alternative","Alternative plan.","高考"},
+            {"ambitious","ambitious","adj. ambitious","Ambitious goal.","高考"},
+            {"analyze","analyze","v. analyze","Analyze data.","高考"},
+            {"ancestor","ancestor","n. ancestor","Our ancestor.","高考"},
+            {"annual","annual","adj. annual","Annual event.","高考"},
+            {"anticipate","anticipate","v. anticipate","Anticipate result.","高考"},
+            {"anxiety","anxiety","n. anxiety","Exam anxiety.","高考"},
+            {"apparent","apparent","adj. apparent","Apparent reason.","高考"},
+            {"appeal","appeal","v. appeal","Appeal to youth.","高考"},
+            {"applaud","applaud","v. applaud","Applaud success.","高考"},
+            {"appoint","appoint","v. appoint","Appoint leader.","高考"},
+            {"appropriate","appropriate","adj. appropriate","Appropriate time.","高考"},
+            {"approve","approve","v. approve","Approve plan.","高考"},
+            {"arise","arise","v. arise","Problem arises.","高考"},
+            {"artificial","artificial","adj. artificial","Artificial intelligence.","高考"},
+            {"assess","assess","v. assess","Assess value.","高考"},
+            {"assign","assign","v. assign","Assign task.","高考"},
+            {"assist","assist","v. assist","Assist others.","高考"},
+            {"associate","associate","v. associate","Associate professor.","高考"},
+            {"atmosphere","atmosphere","n. atmosphere","Warm atmosphere.","高考"},
+            {"attach","attach","v. attach","Attach document.","高考"},
+            {"attempt","attempt","v. attempt","Attempt again.","高考"},
+            {"attend","attend","v. attend","Attend class.","高考"},
+            {"attitude","attitude","n. attitude","Positive attitude.","高考"},
+            {"authority","authority","n. authority","Respect authority.","高考"},
+            {"available","available","adj. available","Available now.","高考"},
+            {"aware","aware","adj. aware","Aware of risk.","高考"},
+            {"barrier","barrier","n. barrier","Trade barrier.","高考"},
+            {"behalf","behalf","n. behalf","On behalf of.","高考"},
+            {"belief","belief","n. belief","Strong belief.","高考"},
+            {"beneficial","beneficial","adj. beneficial","Beneficial habit.","高考"},
+            {"beyond","beyond","prep. beyond","Beyond expectation.","高考"},
+            {"boundary","boundary","n. boundary","Boundary line.","高考"},
+            {"brilliant","brilliant","adj. brilliant","Brilliant idea.","高考"},
+            {"budget","budget","n. budget","Annual budget.","高考"},
+            {"burden","burden","n. burden","Financial burden.","高考"},
+            {"campaign","campaign","n. campaign","Election campaign.","高考"},
+            {"capable","capable","adj. capable","Capable leader.","高考"},
+            {"capacity","capacity","n. capacity","Large capacity.","高考"},
+            {"category","category","n. category","Category of books.","高考"},
+            {"caution","caution","n. caution","Use caution.","高考"},
+            {"cease","cease","v. cease","Cease fire.","高考"},
+            {"champion","champion","n. champion","Win champion.","高考"},
+            {"characteristic","characteristic","n. characteristic","Key characteristic.","高考"},
+            {"circumstance","circumstance","n. circumstance","Under circumstance.","高考"},
+            {"civilization","civilization","n. civilization","Ancient civilization.","高考"},
+            {"collapse","collapse","v. collapse","Building collapse.","高考"},
+            {"colleague","colleague","n. colleague","Trusted colleague.","高考"},
+            {"commerce","commerce","n. commerce","E-commerce.","高考"},
+            {"commit","commit","v. commit","Commit to goal.","高考"},
+            {"commodity","commodity","n. commodity","Commodity price.","高考"},
+            {"compensate","compensate","v. compensate","Compensate loss.","高考"},
+            {"competent","competent","adj. competent","Competent staff.","高考"},
+            {"component","component","n. component","Key component.","高考"},
+            {"comprehensive","comprehensive","adj. comprehensive","Comprehensive review.","高考"},
+            {"compulsory","compulsory","adj. compulsory","Compulsory course.","高考"},
+        };
+        for (String[] w : gk) allWords.add(new String[]{w[0],w[1],w[2],w[3],w[4],"高频词汇"});
+
+        // ===== CET4 (80 words) =====
+        String[][] c4 = {
+            {"abandon","abandon","vt. abandon","Abandon ship.","四级"},
+            {"absolute","absolute","adj. absolute","Absolute truth.","四级"},
+            {"absorb","absorb","v. absorb","Absorb CO2.","四级"},
+            {"abstract","abstract","adj. abstract","Abstract art.","四级"},
+            {"abuse","abuse","n. abuse","Abuse of power.","四级"},
+            {"academic","academic","adj. academic","Academic study.","四级"},
+            {"access","access","n. access","Internet access.","四级"},
+            {"accident","accident","n. accident","Car accident.","四级"},
+            {"account","account","n. account","Bank account.","四级"},
+            {"accumulate","accumulate","v. accumulate","Accumulate wealth.","四级"},
+            {"accurate","accurate","adj. accurate","Accurate answer.","四级"},
+            {"accuse","accuse","v. accuse","Accuse of theft.","四级"},
+            {"achieve","achieve","v. achieve","Achieve success.","四级"},
+            {"acknowledge","ackledge","v. acknowledge","Acknowledge truth.","四级"},
+            {"acquire","acquire","v. acquire","Acquire knowledge.","四级"},
+            {"adapt","adapt","v. adapt","Adapt to change.","四级"},
+            {"adequate","adequate","adj. adequate","Adequate time.","四级"},
+            {"adjust","adjust","v. adjust","Adjust schedule.","四级"},
+            {"administration","admin","n. administration","Business admin.","四级"},
+            {"admission","admission","n. admission","Admission free.","四级"},
+            {"adopt","adopt","v. adopt","Adopt method.","四级"},
+            {"advanced","advanced","adj. advanced","Advanced tech.","四级"},
+            {"affair","affair","n. affair","Foreign affair.","四级"},
+            {"affect","affect","v. affect","Affect result.","四级"},
+            {"agency","agency","n. agency","Travel agency.","四级"},
+            {"agenda","agenda","n. agenda","Meeting agenda.","四级"},
+            {"aggressive","aggressive","adj. aggressive","Aggressive play.","四级"},
+            {"allocate","allocate","v. allocate","Allocate time.","四级"},
+            {"alternative","alternative","n. alternative","Alternative way.","四级"},
+            {"amaze","amaze","v. amaze","Amaze everyone.","四级"},
+            {"ambition","ambition","n. ambition","Great ambition.","四级"},
+            {"analysis","analysis","n. analysis","Data analysis.","四级"},
+            {"ancient","ancient","adj. ancient","Ancient city.","四级"},
+            {"annual","annual","adj. annual","Annual report.","四级"},
+            {"anxiety","anxiety","n. anxiety","Feel anxiety.","四级"},
+            {"apparent","apparent","adj. apparent","Apparent mistake.","四级"},
+            {"appeal","appeal","v. appeal","Appeal to me.","四级"},
+            {"appetite","appetite","n. appetite","Good appetite.","四级"},
+            {"appliance","appliance","n. appliance","Home appliance.","四级"},
+            {"apply","apply","v. apply","Apply online.","四级"},
+            {"appoint","appoint","v. appoint","Appoint manager.","四级"},
+            {"appreciate","appreciate","v. appreciate","Appreciate help.","四级"},
+            {"approach","approach","v. approach","Approach problem.","四级"},
+            {"appropriate","appropriate","adj. appropriate","Appropriate time.","四级"},
+            {"approve","approve","v. approve","Approve plan.","四级"},
+            {"arise","arise","v. arise","Problem arises.","四级"},
+            {"arrange","arrange","v. arrange","Arrange meeting.","四级"},
+            {"arrest","arrest","v. arrest","Arrest suspect.","四级"},
+            {"artificial","artificial","adj. artificial","Artificial flower.","四级"},
+            {"aspect","aspect","n. aspect","Key aspect.","四级"},
+            {"assemble","assemble","v. assemble","Assemble team.","四级"},
+            {"assess","assess","v. assess","Assess damage.","四级"},
+            {"assign","assign","v. assign","Assign homework.","四级"},
+            {"assist","assist","v. assist","Assist customer.","四级"},
+            {"associate","associate","v. associate","Associate with.","四级"},
+            {"assume","assume","v. assume","Assume role.","四级"},
+            {"atmosphere","atmosphere","n. atmosphere","Friendly atm.","四级"},
+            {"attach","attach","v. attach","Attach file.","四级"},
+            {"attain","attain","v. attain","Attain goal.","四级"},
+            {"attempt","attempt","v. attempt","Attempt again.","四级"},
+            {"attend","attend","v. attend","Attend class.","四级"},
+            {"attitude","attitude","n. attitude","Good attitude.","四级"},
+            {"attract","attract","v. attract","Attract crowd.","四级"},
+            {"attribute","attribute","v. attribute","Attribute to luck.","四级"},
+            {"audience","audience","n. audience","Large audience.","四级"},
+            {"authority","authority","n. authority","Local authority.","四级"},
+            {"available","available","adj. available","Available now.","四级"},
+            {"abandon","abandon","vt. abandon","Abandon ship.","四级"},
+            {"absolute","absolute","adj. absolute","Absolute faith.","四级"},
+            {"absorb","absorb","v. absorb","Absorb CO2.","四级"},
+            {"abstract","abstract","adj. abstract","Abstract idea.","四级"},
+            {"abuse","abuse","n. abuse","Abuse of power.","四级"},
+            {"academic","academic","adj. academic","Academic record.","四级"},
+            {"access","access","n. access","Access library.","四级"},
+            {"accident","accident","n. accident","Car accident.","四级"},
+            {"account","account","n. account","Bank account.","四级"},
+            {"accumulate","accumulate","v. accumulate","Accumulate wealth.","四级"},
+        };
+        for (String[] w : c4) allWords.add(new String[]{w[0],w[1],w[2],w[3],w[4],"四级词汇"});
+
+        for (String[] w : allWords) {
+            EnglishWord ew = new EnglishWord();
+            ew.setWord(w[0]);
+            ew.setPhonetic("/" + w[1] + "/");
+            ew.setMeaning(w[2]);
+            ew.setExample(w[3]);
+            ew.setStage(w[4]);
+            ew.setCategory(w[5]);
+            ew.setMemoryStatus(0);
+            ew.setReviewCount(0);
+            wordMapper.insert(ew);
         }
-        log.info("Seeding English words...");
-
-        // 中考词汇 (junior high entrance exam)
-        addWord("abandon", "/əˈbændən/", "v. 放弃；遗弃", "He had to abandon the plan.", "中考", "核心词汇");
-        addWord("ability", "/əˈbɪləti/", "n. 能力；才能", "She has the ability to learn quickly.", "中考", "核心词汇");
-        addWord("absent", "/ˈæbsənt/", "adj. 缺席的；不在的", "He was absent from school today.", "中考", "核心词汇");
-        addWord("accept", "/əkˈsept/", "v. 接受；承认", "Please accept my apology.", "中考", "核心词汇");
-        addWord("achieve", "/əˈtʃiːv/", "v. 实现；达到", "Work hard to achieve your goals.", "中考", "核心词汇");
-        addWord("achieve", "/əˈtʃiːv/", "v. 实现；取得", "She achieved her dream of becoming a doctor.", "中考", "核心词汇");
-        addWord("advantage", "/ədˈvæntɪdʒ/", "n. 优势；有利条件", "Being tall is an advantage in basketball.", "中考", "核心词汇");
-        addWord("adventure", "/ədˈventʃər/", "n. 冒险；奇遇", "They went on an exciting adventure.", "中考", "核心词汇");
-        addWord("afford", "/əˈfɔːrd/", "v. 负担得起", "I can't afford to buy a new car.", "中考", "核心词汇");
-        addWord("against", "/əˈɡeɪnst/", "prep. 反对；靠着", "We will play against Class A.", "中考", "核心词汇");
-        addWord("agree", "/əˈɡriː/", "v. 同意；赞成", "I agree with your opinion.", "中考", "核心词汇");
-        addWord("allow", "/əˈlaʊ/", "v. 允许；准许", "Smoking is not allowed here.", "中考", "核心词汇");
-        addWord("although", "/ɔːlˈðoʊ/", "conj. 虽然；尽管", "Although it rained, we went out.", "中考", "核心词汇");
-        addWord("announce", "/əˈnaʊns/", "v. 宣布；通知", "The teacher announced the test results.", "中考", "核心词汇");
-        addWord("appear", "/əˈpɪr/", "v. 出现；似乎", "A rainbow appeared after the rain.", "中考", "核心词汇");
-
-        // 高考词汇 (college entrance exam)
-        addWord("abundant", "/əˈbʌndənt/", "adj. 丰富的；充裕的", "The region has abundant natural resources.", "高考", "高频词汇");
-        addWord("accelerate", "/əkˈseləreɪt/", "v. 加速；促进", "Economic growth accelerated this year.", "高考", "高频词汇");
-        addWord("accommodate", "/əˈkɒmədeɪt/", "v. 容纳；适应", "The hotel can accommodate 500 guests.", "高考", "高频词汇");
-        addWord("accompany", "/əˈkʌmpəni/", "v. 陪伴；伴随", "She accompanied her mother to the hospital.", "高考", "高频词汇");
-        addWord("accomplish", "/əˈkɑːmplɪʃ/", "v. 完成；实现", "We accomplished our mission successfully.", "高考", "高频词汇");
-        addWord("accurate", "/ˈækjərət/", "adj. 准确的；精确的", "The data must be accurate.", "高考", "高频词汇");
-        addWord("acquire", "/əˈkwaɪər/", "v. 获得；学到", "She acquired a good knowledge of English.", "高考", "高频词汇");
-        addWord("adapt", "/əˈdæpt/", "v. 适应；改编", "Animals adapt to their environment.", "高考", "高频词汇");
-        addWord("adequate", "/ˈædɪkwət/", "adj. 充足的；适当的", "The supply is not adequate for the demand.", "高考", "高频词汇");
-        addWord("adjust", "/əˈdʒʌst/", "v. 调整；适应", "You need to adjust your study methods.", "高考", "高频词汇");
-
-        // 四级词汇 (CET-4)
-        addWord("abandon", "/əˈbændən/", "vt. 放弃；遗弃", "They abandoned the sinking ship.", "四级", "核心词汇");
-        addWord("absolute", "/ˈæbsəluːt/", "adj. 绝对的；完全的", "I have absolute faith in her judgment.", "四级", "核心词汇");
-        addWord("absorb", "/əbˈzɔːrb/", "v. 吸收；吸引", "Plants absorb carbon dioxide.", "四级", "核心词汇");
-        addWord("abstract", "/ˈæbstrækt/", "adj. 抽象的；理论的", "The idea is too abstract for children.", "四级", "核心词汇");
-        addWord("abuse", "/əˈbjuːs/", "n./v. 滥用；虐待", "This is an abuse of power.", "四级", "核心词汇");
-        addWord("academic", "/ˌækəˈdemɪk/", "adj. 学术的；学院的", "She has a brilliant academic record.", "四级", "核心词汇");
-        addWord("access", "/ˈækses/", "n. 通道；入口 v. 访问", "Students have access to the library.", "四级", "核心词汇");
-        addWord("accident", "/ˈæksɪdənt/", "n. 事故；意外", "The accident happened at the crossroads.", "四级", "核心词汇");
-        addWord("account", "/əˈkaʊnt/", "n. 账户；描述", "Please explain your account of events.", "四级", "核心词汇");
-        addWord("accumulate", "/əˈkjuːmjəleɪt/", "v. 积累；积聚", "Dust accumulated on the bookshelf.", "四级", "核心词汇");
-
-        // 六级词汇 (CET-6)
-        addWord("abnormal", "/æbˈnɔːrml/", "adj. 反常的；异常的", "The test showed abnormal results.", "六级", "核心词汇");
-        addWord("abolish", "/əˈbɑːlɪʃ/", "vt. 废除；废止", "Slavery was abolished in the 19th century.", "六级", "核心词汇");
-        addWord("abortion", "/əˈbɔːrʃn/", "n. 流产；堕胎", "The debate on abortion continues.", "六级", "核心词汇");
-        addWord("abrupt", "/əˈbrʌpt/", "adj. 突然的；唐突的", "The meeting came to an abrupt end.", "六级", "核心词汇");
-        addWord("absurd", "/əbˈsɜːrd/", "adj. 荒谬的；可笑的", "The idea seems absurd to me.", "六级", "核心词汇");
-        addWord("abundance", "/əˈbʌndəns/", "n. 丰富；充裕", "There is an abundance of wildlife here.", "六级", "核心词汇");
-        addWord("accessory", "/əkˈsesəri/", "n. 配件；附属品", "The store sells fashion accessories.", "六级", "核心词汇");
-        addWord("accommodate", "/əˈkɒmədeɪt/", "v. 容纳；向…提供住处", "The hall can accommodate 200 people.", "六级", "核心词汇");
-        addWord("accountable", "/əˈkaʊntəbl/", "adj. 有责任的；应负责的", "The government should be accountable to the people.", "六级", "核心词汇");
-        addWord("accumulation", "/əˌkjuːmjəˈleɪʃn/", "n. 积累；积聚物", "The accumulation of wealth is not everything.", "六级", "核心词汇");
-
-        log.info("Seeded " + (15 + 10 + 10 + 10) + " English words across all stages.");
-    }
-
-    private void addWord(String word, String phonetic, String meaning, String example, String stage, String category) {
-        EnglishWord w = new EnglishWord();
-        w.setWord(word);
-        w.setPhonetic(phonetic);
-        w.setMeaning(meaning);
-        w.setExample(example);
-        w.setStage(stage);
-        w.setCategory(category);
-        w.setMemoryStatus(0);
-        w.setReviewCount(0);
-        wordMapper.insert(w);
+        log.info("Seeded " + allWords.size() + " English words across all stages.");
     }
 }

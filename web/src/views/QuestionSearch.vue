@@ -1,12 +1,14 @@
-<template>
+﻿<template>
   <div class="question-page">
     <el-card class="search-card">
-      <el-radio-group v-model="searchMode" size="large">
-        <el-radio-button label="text">📝 文字搜题</el-radio-button>
-        <el-radio-button label="photo">📷 拍照搜题</el-radio-button>
-      </el-radio-group>
+      <div class="search-type">
+        <el-radio-group v-model="searchMode" size="large">
+          <el-radio-button label="text">📝 文字搜题</el-radio-button>
+          <el-radio-button label="photo">📸 拍照搜题</el-radio-button>
+        </el-radio-group>
+      </div>
       <div class="search-area" v-if="searchMode === 'text'">
-        <el-input v-model="questionText" type="textarea" :rows="4" placeholder="输入题目内容，AI将为您分步解析..." />
+        <el-input v-model="questionText" type="textarea" :rows="4" placeholder="输入题目内容或学习问题，AI将为您详细解答..." />
         <div class="search-filters">
           <el-select v-model="searchSubject" placeholder="科目" style="width:140px">
             <el-option v-for="s in subjectOptions" :key="s.key" :label="s.label" :value="s.key" />
@@ -26,28 +28,21 @@
     </el-card>
 
     <el-card v-if="result" class="result-card">
-      <template #header><span>🔬 AI解析结果</span></template>
-      <div class="result-steps">
-        <div v-for="(step, idx) in result.steps" :key="idx" class="step-item">
-          <div class="step-num">{{ idx + 1 }}</div>
-          <div class="step-content">{{ step }}</div>
-        </div>
-      </div>
-      <el-divider />
+      <template #header><span>📡 AI解析结果</span></template>
       <div class="result-section">
-        <el-tag type="success" size="large">答案</el-tag>
-        <div class="answer-content">{{ result.answer }}</div>
+        <el-tag type="success" size="large" class="answer-tag">💡 解答</el-tag>
       </div>
-      <div class="result-section">
-        <span class="section-label">知识点：</span>
+      <div class="answer-content">{{ result.answer }}</div>
+      <div class="result-section" v-if="result.knowledgePoints && result.knowledgePoints.length" style="margin-top:16px">
+        <span class="section-label">📌 知识点：</span>
         <el-tag v-for="kp in result.knowledgePoints" :key="kp" type="info" size="small" style="margin-right:8px">{{ kp }}</el-tag>
       </div>
-      <el-alert :title="result.commonMistakes" type="warning" :closable="false" show-icon style="margin:12px 0" />
-      <div class="result-section" v-if="result.relatedConcepts">
-        <span class="section-label">拓展概念：</span>
+      <div class="result-section" v-if="result.relatedConcepts && result.relatedConcepts.length" style="margin-top:12px">
+        <span class="section-label">🔗 拓展概念：</span>
         <el-tag v-for="c in result.relatedConcepts" :key="c" type="" size="small" style="margin-right:8px">{{ c }}</el-tag>
       </div>
     </el-card>
+    <el-empty v-else-if="!searching && questionText && !result" description="输入题目后点击AI智能解析开始分析" :image-size="80" style="margin-top:40px" />
   </div>
 </template>
 
@@ -77,15 +72,19 @@ const subjectOptions = [
 const stages = ['小学', '初中', '高中', '大学']
 
 async function searchQuestion() {
-  if (!questionText.value.trim()) return ElMessage.warning('请输入题目内容')
+  const text = questionText.value.trim()
+  if (!text) return ElMessage.warning('请输入题目内容')
   searching.value = true
+  result.value = null
   try {
-    const res = await http.post('/question/search', {
-      content: questionText.value,
-      subject: searchSubject.value,
-      stage: searchStage.value
+    const res = await http.post('/ai/generate', {
+      generateType: 6,
+      inputContent: text,
+      topic: searchSubject.value
     })
-    result.value = res.data
+    result.value = { answer: res.data.content, steps: [], knowledgePoints: [], relatedConcepts: [] }
+  } catch (e) {
+    ElMessage.error('请求失败，请检查网络连接')
   } finally {
     searching.value = false
   }
@@ -95,18 +94,24 @@ async function searchQuestion() {
 <style scoped>
 .question-page { max-width: 900px; margin: 0 auto; }
 .search-card { border-radius: 14px; margin-bottom: 20px; }
-.search-area { margin-top: 20px; }
+.search-type { margin-bottom: 6px; }
+.search-area { margin-top: 16px; }
 .search-filters { display: flex; gap: 12px; margin-top: 12px; }
 .photo-upload { width: 100%; }
 .upload-text { font-size: 14px; color: #909399; margin-top: 8px; }
 .result-card { border-radius: 14px; }
-.step-item { display: flex; gap: 14px; padding: 12px 0; border-bottom: 1px dashed #ebeef5; }
-.step-num {
-  width: 28px; height: 28px; background: linear-gradient(135deg, #667eea, #764ba2);
-  color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0;
+.result-section { display: flex; align-items: flex-start; gap: 8px; }
+.answer-tag { margin-bottom: 8px; }
+.answer-content {
+  font-size: 15px;
+  color: #303133;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  background: #f8f9fa;
+  padding: 16px 20px;
+  border-radius: 10px;
+  margin-top: 4px;
 }
-.step-content { font-size: 14px; color: #606266; line-height: 1.8; }
-.result-section { margin: 12px 0; display: flex; align-items: flex-start; gap: 8px; }
-.answer-content { font-size: 15px; font-weight: 500; color: #67c23a; line-height: 1.6; }
 .section-label { font-size: 13px; color: #909399; white-space: nowrap; margin-top: 2px; }
 </style>
