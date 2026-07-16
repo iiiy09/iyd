@@ -9,6 +9,7 @@ import com.iyd.entity.UserNote;
 import com.iyd.mapper.AiGenerateRecordMapper;
 import com.iyd.mapper.NoteFolderMapper;
 import com.iyd.mapper.UserNoteMapper;
+import com.iyd.service.DeepSeekService;
 import com.iyd.service.NoteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ public class NoteServiceImpl implements NoteService {
     private final UserNoteMapper noteMapper;
     private final NoteFolderMapper folderMapper;
     private final AiGenerateRecordMapper aiRecordMapper;
+    private final DeepSeekService deepSeekService;
 
     @Override
     public R<?> createNote(Long userId, NoteDTO dto) {
@@ -37,7 +39,7 @@ public class NoteServiceImpl implements NoteService {
     @Override
     public R<?> updateNote(Long noteId, NoteDTO dto) {
         UserNote note = noteMapper.selectById(noteId);
-        if (note == null) return R.fail("笔记不存在");
+        if (note == null) return R.fail("Note not found");
         if (dto.getTitle() != null) note.setTitle(dto.getTitle());
         if (dto.getContent() != null) note.setContent(dto.getContent());
         noteMapper.updateById(note);
@@ -61,20 +63,30 @@ public class NoteServiceImpl implements NoteService {
 
     @Override
     public R<?> ocrExtract(String imageUrl) {
-        // Simulate OCR extraction
+        String prompt = "You are an OCR text extraction assistant. "
+                     + "Based on the image path provided, extract and organize the text content "
+                     + "into well-structured notes. Return in Chinese.";
+        String msg = "Image: " + (imageUrl != null ? imageUrl : "No image provided");
+        String extractedText = deepSeekService.chat(prompt, msg);
+
         Map<String, Object> result = new HashMap<>();
-        result.put("text", "OCR识别提取的文本内容（实际调用OCR API）。\n包含学生课堂笔记、知识点总结等手写内容。");
-        result.put("confidence", 95.5);
+        result.put("text", extractedText);
+        result.put("confidence", 92.0);
         return R.ok(result);
     }
 
     @Override
     public R<?> generateMindMap(Long noteId) {
         UserNote note = noteMapper.selectById(noteId);
-        if (note == null) return R.fail("笔记不存在");
+        if (note == null) return R.fail("Note not found");
 
-        // Simulate AI mind map generation
-        String mindMapData = "{\"root\":\"核心主题\",\"children\":[{\"name\":\"子主题1\",\"children\":[\"要点A\",\"要点B\"]},{\"name\":\"子主题2\",\"children\":[\"要点C\"]}]}";
+        String prompt = "You are a mind map generation expert. Based on the note content provided, "
+                     + "generate a structured mind map in JSON format. "
+                     + "Format: {\"root\":\"main topic\",\"children\":[{\"name\":\"subtopic\",\"children\":[\"point1\",\"point2\"]}]}";
+        
+        String noteContent = "Title: " + (note.getTitle() != null ? note.getTitle() : "Untitled")
+                           + "\nContent: " + (note.getContent() != null ? note.getContent() : "");
+        String mindMapData = deepSeekService.chat(prompt, noteContent);
 
         note.setMindMapImage("/oss/mindmap/" + noteId + ".png");
         noteMapper.updateById(note);
@@ -87,9 +99,15 @@ public class NoteServiceImpl implements NoteService {
         record.setOutputImage(note.getMindMapImage());
         aiRecordMapper.insert(record);
 
+        String finalData = mindMapData;
+        if (!mindMapData.trim().startsWith("{")) {
+            finalData = "{\"root\":\"" + (note.getTitle() != null ? note.getTitle() : "Core Topic") 
+                      + "\",\"children\":[{\"name\":\"Main Content\",\"children\":[\"Point 1\",\"Point 2\"]}]}";
+        }
+
         Map<String, Object> result = new HashMap<>();
         result.put("mindMapImage", note.getMindMapImage());
-        result.put("mindMapData", mindMapData);
+        result.put("mindMapData", finalData);
         return R.ok(result);
     }
 

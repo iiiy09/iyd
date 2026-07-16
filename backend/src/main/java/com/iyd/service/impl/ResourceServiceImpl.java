@@ -8,6 +8,7 @@ import com.iyd.entity.StudyResource;
 import com.iyd.entity.UserCollection;
 import com.iyd.mapper.StudyResourceMapper;
 import com.iyd.mapper.UserCollectionMapper;
+import com.iyd.service.DeepSeekService;
 import com.iyd.service.ResourceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import java.util.*;
 public class ResourceServiceImpl implements ResourceService {
     private final StudyResourceMapper resourceMapper;
     private final UserCollectionMapper collectionMapper;
+    private final DeepSeekService deepSeekService;
 
     @Override
     public R<?> searchResources(ResourceQueryDTO dto) {
@@ -28,9 +30,50 @@ public class ResourceServiceImpl implements ResourceService {
         if (dto.getGrade() != null && !dto.getGrade().isEmpty()) qw.eq(StudyResource::getGrade, dto.getGrade());
         if (dto.getSubject() != null && !dto.getSubject().isEmpty()) qw.eq(StudyResource::getSubject, dto.getSubject());
         if (dto.getResourceType() != null && !dto.getResourceType().isEmpty()) qw.eq(StudyResource::getResourceType, dto.getResourceType());
-        if (dto.getKeyword() != null && !dto.getKeyword().isEmpty()) qw.like(StudyResource::getResourceName, dto.getKeyword());
+        if (dto.getKeyword() != null && !dto.getKeyword().isEmpty()) {
+            qw.like(StudyResource::getResourceName, dto.getKeyword());
+        }
         qw.orderByDesc(StudyResource::getDownloadCount).orderByDesc(StudyResource::getCreateTime);
-        return R.ok(resourceMapper.selectPage(p, qw));
+
+        Page<StudyResource> pageResult = resourceMapper.selectPage(p, qw);
+
+        if (pageResult.getRecords() == null || pageResult.getRecords().isEmpty()) {
+            return searchWithAI(dto);
+        }
+
+        return R.ok(pageResult);
+    }
+
+    private R<?> searchWithAI(ResourceQueryDTO dto) {
+        StringBuilder searchInfo = new StringBuilder("User search conditions:\n");
+        if (dto.getKeyword() != null && !dto.getKeyword().isEmpty()) 
+            searchInfo.append("- Keyword: ").append(dto.getKeyword()).append("\n");
+        if (dto.getSubject() != null && !dto.getSubject().isEmpty()) 
+            searchInfo.append("- Subject: ").append(dto.getSubject()).append("\n");
+        if (dto.getStage() != null && !dto.getStage().isEmpty()) 
+            searchInfo.append("- Stage: ").append(dto.getStage()).append("\n");
+
+        String prompt = "You are a learning resource recommendation assistant. "
+                     + "Based on the user's search criteria, recommend 3-5 relevant study resources. "
+                     + "For each resource provide: name, type (courseware/exam paper/review outline/answer key), "
+                     + "and a brief description. Return in Chinese.";
+        
+        String aiRecommendation = deepSeekService.chat(prompt, searchInfo.toString());
+
+        List<Map<String, Object>> aiResources = new ArrayList<>();
+        Map<String, Object> resource = new HashMap<>();
+        resource.put("resourceName", "AI Recommended: " + (dto.getKeyword() != null ? dto.getKeyword() : "Study Materials"));
+        resource.put("resourceType", "AI Recommended");
+        resource.put("aiGenerated", true);
+        resource.put("description", aiRecommendation);
+        aiResources.add(resource);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("records", aiResources);
+        result.put("total", aiResources.size());
+        result.put("aiRecommended", true);
+        result.put("aiSuggestion", aiRecommendation);
+        return R.ok(result);
     }
 
     @Override
@@ -59,8 +102,7 @@ public class ResourceServiceImpl implements ResourceService {
         UserCollection exist = collectionMapper.selectOne(qw);
         if (exist != null) {
             collectionMapper.deleteById(exist);
-            Map<String, Object> m = new HashMap<>();
-            m.put("collected", false);
+            Map<String, Object> m = new HashMap<>(); m.put("collected", false);
             return R.ok(m);
         }
         UserCollection collection = new UserCollection();
@@ -68,8 +110,7 @@ public class ResourceServiceImpl implements ResourceService {
         collection.setResourceId(resourceId);
         collection.setCollectionType(1);
         collectionMapper.insert(collection);
-        Map<String, Object> m = new HashMap<>();
-        m.put("collected", true);
+        Map<String, Object> m = new HashMap<>(); m.put("collected", true);
         return R.ok(m);
     }
 

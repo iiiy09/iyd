@@ -1,31 +1,26 @@
-# Node  
-node_modules/  
-dist/  
-  
-# Java  
-target/  
-*.class  
-*.jar  
-  
-# Maven  
-apache-maven-*/  
-maven.zip  
-  
-# IDE  
-.idea/  
-*.iml  
-  
-# Database  
-data/  
-  
-# Logs  
-*.log  
-  
-server.log 
-backend/target/
-*.jar
+﻿# Node
+node_modules/
+dist/
+
+# Java
+target/
 *.class
-maven-status/
+*.jar
+
+# Maven
+apache-maven-*/
+maven.zip
+
+# IDE
 .idea/
 *.iml
+
+# Database
+data/
+
+# Logs
 *.log
+server.log
+
+# Railway
+.env

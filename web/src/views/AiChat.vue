@@ -4,7 +4,7 @@
       <div class="chat-sidebar">
         <div class="chat-logo">🤖 AI助手</div>
         <div class="quick-questions">
-          <div class="qq-title">快捷提问</div>
+          <div class="qq-title">💡 快捷提问</div>
           <div v-for="q in quickQuestions" :key="q" class="qq-item" @click="sendQuick(q)">{{ q }}</div>
         </div>
       </div>
@@ -32,7 +32,7 @@ import { ref, nextTick } from 'vue'
 import http from '@/api'
 import { Promotion } from '@element-plus/icons-vue'
 
-const messages = ref([{ role: 'assistant', content: '👋 你好！我是iyd学习AI助手，有什么可以帮你的吗？' }])
+const messages = ref([{ role: 'assistant', content: '👋 你好！我是iyd学习AI助手，你可以问我任何学习问题，我会为你详细解答！' }])
 const inputText = ref('')
 const typing = ref(false)
 const msgContainer = ref(null)
@@ -40,7 +40,7 @@ const msgContainer = ref(null)
 const quickQuestions = [
   '如何提高数学解题速度？',
   '帮我制定英语学习计划',
-  '什么叫二次函数？',
+  '什么是二次函数？',
   '推荐高效记忆方法',
   '中考物理重点有哪些？'
 ]
@@ -54,8 +54,14 @@ async function sendMessage() {
   await scrollBottom()
 
   try {
-    const res = await http.post('/ai/chat', null, { params: { question: text } })
-    messages.value.push({ role: 'assistant', content: res.data.answer })
+    // 使用与AI刷题答疑相同的AI引擎（generateType=6）
+    const res = await http.post('/ai/generate', {
+      generateType: 6,
+      inputContent: text,
+      topic: ''
+    })
+    const answer = res.data.content || '抱歉，暂时无法回答该问题，请换个方式提问。'
+    messages.value.push({ role: 'assistant', content: answer })
   } catch (e) {
     messages.value.push({ role: 'assistant', content: '抱歉，网络问题，请稍后重试。' })
   } finally {
@@ -85,7 +91,7 @@ async function scrollBottom() {
 .msg-row { display: flex; gap: 10px; margin-bottom: 16px; }
 .msg-row.user { flex-direction: row-reverse; }
 .msg-avatar { font-size: 28px; width: 36px; flex-shrink: 0; text-align: center; }
-.msg-bubble { max-width: 70%; padding: 12px 16px; border-radius: 14px; font-size: 14px; line-height: 1.7; }
+.msg-bubble { max-width: 70%; padding: 12px 16px; border-radius: 14px; font-size: 14px; line-height: 1.7; white-space: pre-wrap; word-wrap: break-word; }
 .msg-bubble.user { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border-top-right-radius: 4px; }
 .msg-bubble.assistant { background: #f0f2f5; color: #303133; border-top-left-radius: 4px; }
 .msg-bubble.typing { color: #909399; font-style: italic; }

@@ -9,6 +9,7 @@ import com.iyd.entity.EnglishWord;
 import com.iyd.entity.ReciteRecord;
 import com.iyd.mapper.EnglishWordMapper;
 import com.iyd.mapper.ReciteRecordMapper;
+import com.iyd.service.DeepSeekService;
 import com.iyd.service.ReciteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import java.util.*;
 public class ReciteServiceImpl implements ReciteService {
     private final ReciteRecordMapper recordMapper;
     private final EnglishWordMapper wordMapper;
+    private final DeepSeekService deepSeekService;
 
     @Override
     public R<?> submitRecite(Long userId, ReciteDTO dto) {
@@ -28,40 +30,12 @@ public class ReciteServiceImpl implements ReciteService {
         record.setOriginalText(dto.getOriginalText());
         record.setCheckType(dto.getCheckType() != null ? dto.getCheckType() : 1);
 
-        Map<String, Object> analysis = new HashMap<>();
-
         if (dto.getCheckType() == 1 && dto.getUserAnswer() != null) {
             record.setUserAnswer(dto.getUserAnswer());
-            analysis = analyzeTextMatch(dto.getOriginalText(), dto.getUserAnswer());
-        } else if (dto.getCheckType() == 2) {
-            record.setHandwrittenImage(dto.getHandwrittenImage());
-            String ocrText = dto.getHandwrittenImage() != null && !dto.getHandwrittenImage().isEmpty()
-                    ? "OCR识别结果(已收到图片,待API处理)" : "未上传图片";
-            record.setUserAnswer(ocrText);
-            if (dto.getOriginalText() != null && !ocrText.contains("未上传")) {
-                analysis = analyzeTextMatch(dto.getOriginalText(), ocrText);
-            } else {
-                analysis.put("score", 0.0);
-                analysis.put("accuracy", "0%");
-                analysis.put("errors", new ArrayList<>());
-                analysis.put("errorCount", 0);
-                analysis.put("suggestion", "请上传手写图片后再提交批改");
-            }
-        } else if (dto.getCheckType() == 3) {
-            record.setReciteVideo(dto.getReciteVideo());
-            String speechText = dto.getReciteVideo() != null && !dto.getReciteVideo().isEmpty()
-                    ? "语音识别结果(已收到视频,待API处理)" : "未上传视频";
-            record.setUserAnswer(speechText);
-            if (dto.getOriginalText() != null && !speechText.contains("未上传")) {
-                analysis = analyzeTextMatch(dto.getOriginalText(), speechText);
-            } else {
-                analysis.put("score", 0.0);
-                analysis.put("accuracy", "0%");
-                analysis.put("errors", new ArrayList<>());
-                analysis.put("errorCount", 0);
-                analysis.put("suggestion", "请上传背诵视频后再提交批改");
-            }
         }
+
+        // 使用DeepSeek进行智能批改
+        Map<String, Object> analysis = analyzeWithAI(dto.getOriginalText(), dto.getUserAnswer(), dto.getCheckType());
 
         record.setScore((Double) analysis.getOrDefault("score", 0.0));
         record.setErrorDetails(JSONUtil.toJsonStr(analysis.get("errors")));
@@ -73,7 +47,67 @@ public class ReciteServiceImpl implements ReciteService {
         return R.ok(analysis);
     }
 
-    private Map<String, Object> analyzeTextMatch(String original, String userText) {
+    private Map<String, Object> analyzeWithAI(String original, String userAnswer, Integer checkType) {
+        Map<String, Object> result = new HashMap<>();
+
+        if (original == null || original.trim().isEmpty()) {
+            result.put("score", 0.0);
+            result.put("accuracy", "0%");
+            result.put("errors", new ArrayList<>());
+            result.put("errorCount", 0);
+            result.put("suggestion", "请提供背诵原文");
+            return result;
+        }
+
+        if (checkType == 1 && (userAnswer == null || userAnswer.trim().isEmpty())) {
+            result.put("score", 0.0);
+            result.put("accuracy", "0%");
+            result.put("errors", new ArrayList<>());
+            result.put("errorCount", 0);
+            result.put("suggestion", "请填写默写内容");
+            return result;
+        }
+
+        if (checkType == 1) {
+            // 文字批改 - 使用DeepSeek智能分析
+            String prompt = "你是一个专业的语文/英语背诵批改老师。请对比原文和默写内容，进行详细的批改分析。\n\n"
+                         + "批改要求：\n"
+                         + "1. 逐行对比原文和默写内容\n"
+                         + "2. 找出所有错误（漏写、错字、多字等）\n"
+                         + "3. 计算准确率（精确到小数点后1位）\n"
+                         + "4. 给出评分（百分制）\n"
+                         + "5. 给出改进建议\n\n"
+                         + "请严格按照以下JSON格式返回结果（不要包含其他文字）：\n"
+                         + "{\"score\": 分数, \"accuracy\": \"准确率%\", \"errors\": [{\"line\": 行号, \"original\": \"原文内容\", \"type\": \"missing/mismatch\"}], \"errorCount\": 错误数量, \"suggestion\": \"学习建议\"}";
+
+            String msg = "原文：\n" + original + "\n\n默写内容：\n" + userAnswer;
+            String aiResponse = deepSeekService.chat(prompt, msg);
+
+            try {
+                // 尝试解析JSON
+                Map<String, Object> aiResult = JSONUtil.toBean(aiResponse, Map.class);
+                result.put("score", Double.parseDouble(aiResult.getOrDefault("score", 0).toString()));
+                result.put("accuracy", aiResult.getOrDefault("accuracy", "0%"));
+                result.put("errors", aiResult.getOrDefault("errors", new ArrayList<>()));
+                result.put("errorCount", Integer.parseInt(aiResult.getOrDefault("errorCount", 0).toString()));
+                result.put("suggestion", aiResult.getOrDefault("suggestion", "继续加油！"));
+            } catch (Exception e) {
+                // JSON解析失败，使用简单文本匹配作为备选
+                result = simpleTextMatch(original, userAnswer);
+            }
+        } else {
+            // 拍照/视频批改（已简化，提示用户功能）
+            result.put("score", 0.0);
+            result.put("accuracy", "0%");
+            result.put("errors", new ArrayList<>());
+            result.put("errorCount", 0);
+            result.put("suggestion", "请使用文字批改模式上传背诵内容");
+        }
+
+        return result;
+    }
+
+    private Map<String, Object> simpleTextMatch(String original, String userText) {
         Map<String, Object> result = new HashMap<>();
         List<Map<String, Object>> errors = new ArrayList<>();
 
@@ -85,7 +119,6 @@ public class ReciteServiceImpl implements ReciteService {
 
         int totalChars = original.replaceAll("\\s", "").length();
         int matchChars = 0;
-        int errorCount = 0;
 
         for (int i = 0; i < originalLines.length; i++) {
             String orig = originalLines[i].trim();
@@ -99,40 +132,24 @@ public class ReciteServiceImpl implements ReciteService {
                 err.put("original", orig);
                 err.put("type", cleanedUser.isEmpty() ? "missing" : "mismatch");
                 errors.add(err);
-                errorCount++;
             }
 
             for (int j = 0; j < Math.min(cleanedOriginal.length(), cleanedUser.length()); j++) {
                 if (cleanedOriginal.charAt(j) == cleanedUser.charAt(j)) matchChars++;
             }
         }
-        if (userLines.length < originalLines.length) {
-            for (int i = userLines.length; i < originalLines.length; i++) {
-                Map<String, Object> err = new HashMap<>();
-                err.put("line", i + 1);
-                err.put("original", originalLines[i].trim());
-                err.put("type", "missing");
-                errors.add(err);
-                errorCount++;
-            }
-        }
 
         double score = totalChars > 0 ? Math.round(matchChars * 100.0 / totalChars) : 0;
         String suggestion;
-        if (score >= 90) {
-            suggestion = "背诵优秀！继续保持。";
-        } else if (score >= 70) {
-            suggestion = "整体较好，重点复习标错段落。";
-        } else if (score >= 50) {
-            suggestion = "建议重新熟读原文，加强薄弱段落的记忆。";
-        } else {
-            suggestion = "需要反复朗读和默写，从短句开始逐步突破。";
-        }
+        if (score >= 90) suggestion = "背诵优秀！继续保持。";
+        else if (score >= 70) suggestion = "整体较好，重点复习标错段落。";
+        else if (score >= 50) suggestion = "建议重新熟读原文，加强薄弱段落的记忆。";
+        else suggestion = "需要反复朗读和默写，从短句开始逐步突破。";
 
         result.put("score", score);
         result.put("accuracy", score + "%");
         result.put("errors", errors);
-        result.put("errorCount", errorCount);
+        result.put("errorCount", errors.size());
         result.put("suggestion", suggestion);
         return result;
     }

@@ -1,10 +1,10 @@
-server:
-  port: 8080
+﻿server:
+  port: ${PORT:8080}
 
 spring:
   datasource:
     driver-class-name: org.h2.Driver
-    url: jdbc:h2:file:./data/iyd_learning;MODE=MySQL;FILE_LOCK=FS
+    url: jdbc:h2:file:/tmp/data/iyd_learning;MODE=MySQL;FILE_LOCK=FS
     username: sa
     password:
   h2:
@@ -16,10 +16,10 @@ spring:
       mode: always
       schema-locations: classpath:db/schema-h2.sql
   redis:
-    host: localhost
-    port: 6379
-    password:
-    database: 0
+    host: ${REDIS_HOST:}
+    port: ${REDIS_PORT:6379}
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
   servlet:
     multipart:
       max-file-size: 500MB
@@ -46,17 +46,7 @@ aliyun:
     accessKeySecret: demo-secret
     bucketName: iyd-learning
 
-ai:
-  api:
-    llm:
-      url: https://api.openai.com/v1/chat/completions
-      key: demo-key
-    ocr:
-      url: demo-ocr-url
-      key: demo-key
-    speech:
-      url: demo-speech-url
-      key: demo-key
-    image:
-      url: demo-image-url
-      key: demo-key
+deepseek:
+  api-key: ${DEEPSEEK_API_KEY:sk-0c025f7cb9c346f7b1ec0e10ab53bff9}
+  api-url: https://api.deepseek.com/v1/chat/completions
+  model: deepseek-chat
