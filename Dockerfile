@@ -1,34 +1,24 @@
 # ============================================================
 # Dockerfile - Railway Deployment
-# Multi-stage build: Frontend (Vue) + Backend (Spring Boot)
+# Multi-stage: Vue + Spring Boot
 # ============================================================
 
-# ---------- Stage 1: Build Vue Frontend ----------
+# ---------- Frontend Build ----------
 FROM node:18-alpine AS frontend
-WORKDIR /app/web
-COPY web/package.json web/package-lock.json* ./
-RUN npm install
-COPY web/ .
-RUN npm run build
+WORKDIR /app
+COPY web/package.json web/package-lock.json* ./web/
+RUN cd web && npm install
+COPY web/ ./web
+RUN cd web && npm run build
 
-# ---------- Stage 2: Build Spring Boot Backend ----------
+# ---------- Backend Build ----------
 FROM eclipse-temurin:17-jdk-alpine AS backend
-RUN apk add --no-cache maven
-RUN mkdir -p /root/.m2 && cat > /root/.m2/settings.xml << 'EOF'
-<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
-  https://maven.apache.org/xsd/settings-1.0.0.xsd">
-  <mirrors>
-    <mirror>
-      <id>aliyun</id>
-      <name>Aliyun Maven Mirror</name>
-      <url>https://maven.aliyun.com/repository/public</url>
-      <mirrorOf>central</mirrorOf>
-    </mirror>
-  </mirrors>
-</settings>
-EOF
+COPY apache-maven-3.9.6 /opt/maven
+ENV MAVEN_HOME=/opt/maven
+ENV PATH="${MAVEN_HOME}/bin:${PATH}"
+ENV MAVEN_OPTS="-Xmx512m"
+RUN mkdir -p /root/.m2
+RUN echo "<settings><mirrors><mirror><id>aliyun</id><url>https://maven.aliyun.com/repository/public</url><mirrorOf>central</mirrorOf></mirror></mirrors></settings>" > /root/.m2/settings.xml
 WORKDIR /app
 COPY backend/pom.xml .
 COPY backend/src ./src
@@ -36,7 +26,7 @@ RUN mkdir -p ./src/main/resources/static
 COPY --from=frontend /app/web/dist ./src/main/resources/static
 RUN mvn package -DskipTests -B -q
 
-# ---------- Stage 3: Runtime ----------
+# ---------- Runtime ----------
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
