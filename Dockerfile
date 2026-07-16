@@ -14,6 +14,7 @@ RUN cd web && npm run build
 # ---------- Backend Build ----------
 FROM eclipse-temurin:17-jdk-alpine AS backend
 COPY apache-maven-3.9.6 /opt/maven
+RUN chmod -R +x /opt/maven/bin/
 ENV MAVEN_HOME=/opt/maven
 ENV PATH="${MAVEN_HOME}/bin:${PATH}"
 ENV MAVEN_OPTS="-Xmx512m"
