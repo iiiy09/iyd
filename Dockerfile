@@ -15,11 +15,10 @@ RUN npm run build
 FROM maven:3.9-eclipse-temurin-17 AS backend
 WORKDIR /app
 COPY backend/pom.xml .
-RUN mvn dependency:go-offline -B
 COPY backend/src ./src
 RUN mkdir -p ./src/main/resources/static
 COPY --from=frontend /app/web/dist ./src/main/resources/static
-RUN mvn package -DskipTests -B
+RUN mvn package -DskipTests -B -q
 
 # ---------- Stage 3: Runtime ----------
 FROM eclipse-temurin:17-jre-alpine
